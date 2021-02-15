@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  OPENVINO_BRANCH: 2021.2
+  VERSION: 2021.2.1
+
+jobs:
+  run_linux:
+    runs-on: ubuntu-18.04
+    name: Build on Linux
+
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+
+    - name: Clone OpenVINO
+      run: |
+        git clone -b ${{env.OPENVINO_BRANCH}} https://github.com/openvinotoolkit/openvino
+        git clone -b mo_pytorch_manifest https://github.com/dkurt/openvino_contrib
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y default-jdk
+
+    - name: Build
+      run: |
+        cd openvino
+        git submodule init
+        git submodule update --recursive
+
+        mkdir build && cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DIE_EXTRA_MODULES=../openvino_contrib/modules \
+          -DBUILD_arm_plugin=OFF \
+          -DENABLE_VPU=OFF \
+          -DENABLE_CLDNN=OFF \
+          -DENABLE_SAMPLES=OFF \
+          -DENABLE_OPENCV=OFF \
+          -DENABLE_CPPLINT=OFF \
+          -DENABLE_PYTHON=OFF
+        make -j$(nproc --all)
+
+    - name: Publish
+      run: |
+        cd openvino_contrib/modules/java_api
+        mkdir native
+        mv ../../../openvino/bin/intel64/Release/lib/*.so native
+        mv ../../../openvino/bin/intel64/Release/lib/plugins.xml native
+        gradle bintrayUpload
