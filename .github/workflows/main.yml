@@ -6,7 +6,7 @@ on:
 
 env:
   OPENVINO_BRANCH: 2021.2
-  BASE_VERSION: 2021.2.2
+  BASE_VERSION: 2021.2.3
 
 jobs:
   run_linux:
@@ -36,7 +36,7 @@ jobs:
         mkdir build && cd build
         cmake .. \
           -DCMAKE_BUILD_TYPE=Release \
-          -DIE_EXTRA_MODULES=../openvino_contrib/modules \
+          -DIE_EXTRA_MODULES=../../openvino_contrib/modules \
           -DBUILD_arm_plugin=OFF \
           -DENABLE_SAMPLES=OFF \
           -DENABLE_OPENCV=OFF \
@@ -48,7 +48,7 @@ jobs:
       env:
         BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
         BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
-        VERSION: "${{env.BASE_VERSION}}:linux-x86_64"
+        VERSION: "${{env.BASE_VERSION}}-linux-x86_64"
       run: |
         cd openvino_contrib/modules/java_api
         mkdir native
