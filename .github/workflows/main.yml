@@ -6,7 +6,7 @@ on:
 
 env:
   OPENVINO_BRANCH: 2021.2
-  BASE_VERSION: 2021.2.4
+  BASE_VERSION: 2021.2.7
 
 jobs:
   run_linux:
@@ -37,7 +37,6 @@ jobs:
         cmake .. \
           -DCMAKE_BUILD_TYPE=Release \
           -DIE_EXTRA_MODULES=../../openvino_contrib/modules \
-          -DBUILD_arm_plugin=OFF \
           -DENABLE_CLDNN=OFF \
           -DENABLE_VPU=OFF \
           -DENABLE_GNA=OFF \
@@ -57,5 +56,60 @@ jobs:
         mkdir native
         mv ../../../openvino/bin/intel64/Release/lib/*.so native
         mv ../../../openvino/inference-engine/temp/tbb/lib/libtbb.so.2 native
+        mv ../../../openvino/inference-engine/temp/tbb/lib/libtbbmalloc.so.2 native
         mv ../../../openvino/bin/intel64/Release/lib/plugins.xml native
         gradle bintrayUpload
+
+  run_win:
+    runs-on: windows-latest
+    name: Build on Windows
+
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+
+    - name: Clone OpenVINO
+      run: |
+        git clone -b ${{env.OPENVINO_BRANCH}} https://github.com/openvinotoolkit/openvino
+        git clone -b mo_pytorch_manifest https://github.com/dkurt/openvino_contrib
+
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.2'
+
+    - name: Build
+      run: |
+        cd openvino
+        git submodule init
+        git submodule update --recursive
+
+        mkdir build && cd build
+        cmake .. ^
+          -G "Visual Studio 16 2019" -A x64 ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DIE_EXTRA_MODULES=..\..\openvino_contrib\modules ^
+          -DENABLE_CLDNN=OFF ^
+          -DENABLE_VPU=OFF ^
+          -DENABLE_GNA=OFF ^
+          -DENABLE_SAMPLES=OFF ^
+          -DENABLE_OPENCV=OFF ^
+          -DENABLE_CPPLINT=OFF ^
+          -DENABLE_PYTHON=OFF
+        cmake --build . --config Release -j 2
+      shell: cmd
+
+    - name: Publish
+      env:
+        BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+        VERSION: "${{env.BASE_VERSION}}-windows-x86_64"
+      run: |
+        cd openvino_contrib\modules\java_api
+        mkdir native
+        move ..\\..\\..\\openvino\\bin\\intel64\\Release\\*.dll native
+        move ..\\..\\..\\openvino\\inference-engine\\temp\\tbb\\bin\\tbb.dll native
+        move ..\\..\\..\\openvino\\inference-engine\\temp\\tbb\\bin\\tbbmalloc.dll native
+        move ..\\..\\..\\openvino\\bin\\intel64\\Release\\plugins.xml native
+        gradle bintrayUpload
+      shell: cmd
