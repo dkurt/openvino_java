@@ -71,7 +71,6 @@ jobs:
 
     - name: Clone
       run: |
-        git clone -b ${{env.OPENVINO_TAG}} https://github.com/openvinotoolkit/openvino --depth 1
         git clone -b mo_pytorch_manifest https://github.com/dkurt/openvino_contrib --depth 1
         git clone https://github.com/openvinotoolkit/testdata --depth 1
 
@@ -82,9 +81,8 @@ jobs:
 
     - name: Download OpenVINO
       run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install openvino==${{env.OPENVINO_TAG}}
-        dir c:\hostedtoolcache\windows\python\3.7.9\x64\lib\site-packages\openvino
+        curl https://registrationcenter-download.intel.com/akdlm/irc_nas/17505/w_openvino_toolkit_p_2021.2.185.exe -o openvino.exe
+        start /WAIT openvino.exe --s --a install --eula=accept --output=log.txt
       shell: cmd
 
     - name: Build bindings
@@ -93,7 +91,8 @@ jobs:
         cmake -G "Visual Studio 16 2019" -A x64 ..\openvino_contrib\modules\java_api ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DENABLE_TESTS=OFF ^
-          -DCMAKE_CXX_FLAGS="-I\"..\\openvino\\inference-engine\\include\"" \
+          -DCMAKE_CXX_FLAGS="-I\"C:\Program Files (x86)\Intel\openvino_2021\deployment_tools\inference_engine\include"" ^
+          -DCMAKE_SHARED_LINKER_FLAGS="/LIBPATH:\"C:\Program Files (x86)\Intel\openvino_2021\deployment_tools\inference_engine\lib\intel64\Release""
         cmake --build . --config Release -j 2
       shell: cmd
 
@@ -103,17 +102,19 @@ jobs:
         BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
         VERSION: "${{env.BASE_VERSION}}-windows-x86_64"
       run: |
+        set OPENVINO_DIR="C:\Program Files (x86)\Intel\openvino_2021\deployment_tools\inference_engine"
         cd openvino_contrib\modules\java_api
         mkdir native
-        dir ..\\..\\..\\ov_venv
-        dir move ..\\..\\..\\build_api\\
+        move ..\\..\\..\\build_api\\Release\\*.dll native
+        move %OPENVINO_DIR%\bin\intel64\Release\*.dll native
+        move %OPENVINO_DIR%\bin\intel64\Release\plugins.xml native
+        move %OPENVINO_DIR%\bin\intel64\Release\*.mvcmd native
+        move %OPENVINO_DIR%\external\tbb\bin\tbb.dll native
+        move %OPENVINO_DIR%\external\tbb\bin\tbbmalloc.dll native
+        move %OPENVINO_DIR%\..\ngraph\lib\ngraph.dll native
+        move %OPENVINO_DIR%\..\ngraph\lib\onnx_importer.dll native
         gradle build -Prun_tests -PMODELS_PATH=..\\..\\..\\testdata --info
       shell: cmd
-
-        # move ..\\..\\..\\build_api\\*.dll native
-        # move ..\\..\\..\\ov_venv\\lib\\lib* native
-        # move ..\\..\\..\\ov_venv\\lib\\plugins.xml native
-        # move ..\\..\\..\\ov_venv\\lib\\*.mvcmd native
 
   # run_mac:
   #   runs-on: macos-latest
