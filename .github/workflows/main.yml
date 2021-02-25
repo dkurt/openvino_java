@@ -6,62 +6,59 @@ on:
   pull_request:
 
 env:
-  OPENVINO_BRANCH: 2021.2
+  OPENVINO_TAG: 2021.2
   BASE_VERSION: 2021.2.7
 
 jobs:
-  # run_linux:
-  #   runs-on: ubuntu-18.04
-  #   name: Build on Linux
+  run_linux:
+    runs-on: ubuntu-18.04
+    name: Build on Linux
 
-  #   steps:
-  #   - name: Clone repository
-  #     uses: actions/checkout@v2
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
 
-  #   - name: Clone OpenVINO
-  #     run: |
-  #       git clone -b ${{env.OPENVINO_BRANCH}} https://github.com/openvinotoolkit/openvino
-  #       git clone -b mo_pytorch_manifest https://github.com/dkurt/openvino_contrib
+    - name: Clone
+      run: |
+        git clone -b ${{env.OPENVINO_TAG}} https://github.com/openvinotoolkit/openvino
+        git clone -b mo_pytorch_manifest https://github.com/dkurt/openvino_contrib
+        git clone https://github.com/openvinotoolkit/testdata
 
-  #   - name: Install dependencies
-  #     run: |
-  #       sudo apt-get update
-  #       sudo apt-get install -y default-jdk libusb-1.0-0-dev
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.2'
 
-  #   - name: Build
-  #     run: |
-  #       cd openvino
-  #       git submodule init
-  #       git submodule update --recursive
+    - name: Download OpenVINO
+      run: |
+        python3 -m venv ov_venv
+        source ov_venv/bin/activate
+        python3 -m pip install --upgrade pip
+        python3 -m pip install openvino==${{env.OPENVINO_TAG}}
 
-  #       mkdir build && cd build
-  #       cmake .. \
-  #         -DCMAKE_BUILD_TYPE=Release \
-  #         -DIE_EXTRA_MODULES=../../openvino_contrib/modules \
-  #         -DENABLE_CLDNN=OFF \
-  #         -DENABLE_VPU=OFF \
-  #         -DENABLE_GNA=OFF \
-  #         -DENABLE_SAMPLES=OFF \
-  #         -DENABLE_OPENCV=OFF \
-  #         -DENABLE_CPPLINT=OFF \
-  #         -DENABLE_PYTHON=OFF
-  #       make -j$(nproc --all)
+    - name: Build bindings
+      run: |
+        mkdir build_api && cd build_api
+        cmake ../openvino_contrib/modules/java_api \
+          -DENABLE_TESTS=OFF \
+          -DCMAKE_CXX_FLAGS=-I\ ../openvino/inference-engine/include/ \
+          -DCMAKE_SHARED_LINKER_FLAGS=-L\ ../ov_venv/lib
+        make -j$(nproc --all)
 
-  #   - name: Publish
-  #     env:
-  #       BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-  #       BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
-  #       VERSION: "${{env.BASE_VERSION}}-linux-x86_64"
-  #     run: |
-  #       cd openvino_contrib/modules/java_api
-  #       mkdir native
-  #       mv ../../../openvino/bin/intel64/Release/lib/*.so native
-  #       mv ../../../openvino/inference-engine/temp/tbb/lib/libtbb.so.2 native
-  #       mv ../../../openvino/inference-engine/temp/tbb/lib/libtbbmalloc.so.2 native
-  #       mv ../../../openvino/bin/intel64/Release/lib/plugins.xml native
+    - name: Publish
+      env:
+        BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+        VERSION: "${{env.BASE_VERSION}}-linux-x86_64"
+      run: |
+        cd openvino_contrib/modules/java_api
+        mkdir native
+        mv ../../../build_api/*.so native
+        mv ../../../ov_venv/lib/lib* native
+        mv ../../../ov_venv/lib/plugins.xml native
+        mv ../../../ov_venv/lib/*.mvcmd native
 
-  #       git clone https://github.com/openvinotoolkit/testdata
-  #       gradle build -Prun_tests -PMODELS_PATH=testdata --info
+        gradle build -Prun_tests -PMODELS_PATH=../../../testdata --info
 
   # run_win:
   #   runs-on: windows-latest
@@ -119,59 +116,59 @@ jobs:
   #       gradle build -Prun_tests -PMODELS_PATH=testdata --info
   #     shell: cmd
 
-  run_mac:
-    runs-on: macos-latest
-    name: Build on Mac
+  # run_mac:
+  #   runs-on: macos-latest
+  #   name: Build on Mac
 
-    steps:
-    - name: Clone repository
-      uses: actions/checkout@v2
+  #   steps:
+  #   - name: Clone repository
+  #     uses: actions/checkout@v2
 
-    - name: Clone OpenVINO
-      run: |
-        git clone -b ${{env.OPENVINO_BRANCH}} https://github.com/openvinotoolkit/openvino
-        git clone -b mo_pytorch_manifest https://github.com/dkurt/openvino_contrib
+  #   - name: Clone OpenVINO
+  #     run: |
+  #       git clone -b ${{env.OPENVINO_BRANCH}} https://github.com/openvinotoolkit/openvino
+  #       git clone -b mo_pytorch_manifest https://github.com/dkurt/openvino_contrib
 
-    - name: Install Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: '11.0.2'
+  #   - name: Install Java
+  #     uses: actions/setup-java@v1
+  #     with:
+  #       java-version: '11.0.2'
 
-    - name: Install dependencies
-      run: brew install autoconf automake libtool
+  #   - name: Install dependencies
+  #     run: brew install autoconf automake libtool
 
-    - name: Build
-      run: |
-        cd openvino
-        git submodule init
-        git submodule update --recursive
+  #   - name: Build
+  #     run: |
+  #       cd openvino
+  #       git submodule init
+  #       git submodule update --recursive
 
-        mkdir build && cd build
-        cmake .. \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DIE_EXTRA_MODULES=../../openvino_contrib/modules \
-          -DENABLE_CLDNN=OFF \
-          -DENABLE_VPU=OFF \
-          -DENABLE_GNA=OFF \
-          -DENABLE_SAMPLES=OFF \
-          -DENABLE_OPENCV=OFF \
-          -DENABLE_CPPLINT=OFF \
-          -DENABLE_PYTHON=OFF
-        make -j$(nproc --all)
+  #       mkdir build && cd build
+  #       cmake .. \
+  #         -DCMAKE_BUILD_TYPE=Release \
+  #         -DIE_EXTRA_MODULES=../../openvino_contrib/modules \
+  #         -DENABLE_CLDNN=OFF \
+  #         -DENABLE_VPU=OFF \
+  #         -DENABLE_GNA=OFF \
+  #         -DENABLE_SAMPLES=OFF \
+  #         -DENABLE_OPENCV=OFF \
+  #         -DENABLE_CPPLINT=OFF \
+  #         -DENABLE_PYTHON=OFF
+  #       make -j$(nproc --all)
 
-    - name: Publish
-      env:
-        BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
-        VERSION: "${{env.BASE_VERSION}}-macosx-x86_64"
-      run: |
-        cd openvino_contrib/modules/java_api
-        mkdir native
-        ls ../../../openvino/inference-engine/temp/tbb/lib/
-        mv ../../../openvino/bin/intel64/Release/lib/*.dylib native
-        mv ../../../openvino/inference-engine/temp/tbb/lib/libtbb.dylib native
-        mv ../../../openvino/inference-engine/temp/tbb/lib/libtbbmalloc.dylib native
-        mv ../../../openvino/bin/intel64/Release/lib/plugins.xml native
+  #   - name: Publish
+  #     env:
+  #       BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+  #       BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+  #       VERSION: "${{env.BASE_VERSION}}-macosx-x86_64"
+  #     run: |
+  #       cd openvino_contrib/modules/java_api
+  #       mkdir native
+  #       ls ../../../openvino/inference-engine/temp/tbb/lib/
+  #       mv ../../../openvino/bin/intel64/Release/lib/*.dylib native
+  #       mv ../../../openvino/inference-engine/temp/tbb/lib/libtbb.dylib native
+  #       mv ../../../openvino/inference-engine/temp/tbb/lib/libtbbmalloc.dylib native
+  #       mv ../../../openvino/bin/intel64/Release/lib/plugins.xml native
 
-        git clone https://github.com/openvinotoolkit/testdata
-        gradle build -Prun_tests -PMODELS_PATH=testdata --info
+  #       git clone https://github.com/openvinotoolkit/testdata
+  #       gradle build -Prun_tests -PMODELS_PATH=testdata --info
