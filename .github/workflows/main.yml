@@ -58,7 +58,7 @@ jobs:
         mv ../../../ov_venv/lib/plugins.xml native
         mv ../../../ov_venv/lib/*.mvcmd native
 
-        gradle bintrayUpload -Prun_tests -PMODELS_PATH=../../../testdata --info
+        gradle clean build bintrayUpload -Prun_tests -PMODELS_PATH=../../../testdata --info
 
   run_win:
     runs-on: windows-latest
@@ -112,7 +112,7 @@ jobs:
         move %OPENVINO_DIR%\external\tbb\bin\tbbmalloc.dll native
         move %OPENVINO_DIR%\..\ngraph\lib\ngraph.dll native
         move %OPENVINO_DIR%\..\ngraph\lib\onnx_importer.dll native
-        gradle bintrayUpload -Prun_tests -PMODELS_PATH=..\\..\\..\\testdata --info
+        gradle clean build bintrayUpload -Prun_tests -PMODELS_PATH=..\\..\\..\\testdata --info
       shell: cmd
 
   run_mac:
@@ -168,4 +168,4 @@ jobs:
         mv ../../../ov_venv/lib/plugins.xml native
         mv ../../../ov_venv/lib/*.mvcmd native
 
-        gradle bintrayUpload -Prun_tests -PMODELS_PATH=../../../testdata --info
+        gradle clean build bintrayUpload -Prun_tests -PMODELS_PATH=../../../testdata --info
