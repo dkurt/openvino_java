@@ -6,7 +6,7 @@ on:
 
 env:
   OPENVINO_TAG: 2021.2
-  BASE_VERSION: 2021.2.8
+  BASE_VERSION: 2021.2.9
 
 jobs:
   run_linux:
