@@ -20,7 +20,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone -b java_mac_tets_2 https://github.com/dkurt/openvino_contrib --depth 1
+        git clone -b update_artifactory https://github.com/dkurt/openvino_contrib --depth 1
         git clone https://github.com/openvinotoolkit/testdata --depth 1
 
     - name: Install Java
@@ -48,8 +48,8 @@ jobs:
 
     - name: Publish
       env:
-        BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+        ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+        ARTIFACTORY_PASS: ${{ secrets.ARTIFACTORY_PASS }}
         VERSION: "${{env.BASE_VERSION}}-linux-x86_64"
       run: |
         cd openvino_contrib/modules/java_api
@@ -75,7 +75,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone -b java_mac_tets_2 https://github.com/dkurt/openvino_contrib --depth 1
+        git clone -b update_artifactory https://github.com/dkurt/openvino_contrib --depth 1
         git clone https://github.com/openvinotoolkit/testdata --depth 1
 
     - name: Install Java
@@ -102,8 +102,8 @@ jobs:
 
     - name: Publish
       env:
-        BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+        ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+        ARTIFACTORY_PASS: ${{ secrets.ARTIFACTORY_PASS }}
         VERSION: "${{env.BASE_VERSION}}-windows-x86_64"
       run: |
         set OPENVINO_DIR="C:\Program Files (x86)\Intel\openvino_2021\deployment_tools\inference_engine"
@@ -135,7 +135,7 @@ jobs:
     - name: Clone
       run: |
         git clone -b ${{env.OPENVINO_TAG}} https://github.com/openvinotoolkit/openvino --depth 1
-        git clone -b java_mac_tets_2 https://github.com/dkurt/openvino_contrib --depth 1
+        git clone -b update_artifactory https://github.com/dkurt/openvino_contrib --depth 1
         git clone https://github.com/openvinotoolkit/testdata --depth 1
 
     - name: Install Java
@@ -166,8 +166,8 @@ jobs:
 
     - name: Publish
       env:
-        BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+        ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+        ARTIFACTORY_PASS: ${{ secrets.ARTIFACTORY_PASS }}
         VERSION: "${{env.BASE_VERSION}}-macosx-x86_64"
       run: |
         cd openvino_contrib/modules/java_api
