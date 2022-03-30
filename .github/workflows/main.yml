@@ -6,63 +6,72 @@ on:
   pull_request:
 
 jobs:
-  run_linux:
-    runs-on: ubuntu-18.04
-    name: Build on Linux
-    container:
-      centos:centos8.4.2105
+  # run_linux:
+  #   runs-on: ubuntu-18.04
+  #   name: Build on Linux
+  #   container:
+  #     centos:centos8.4.2105
 
-    steps:
-    - name: Clone repository
-      uses: actions/checkout@v2
+  #   steps:
+  #   - name: Clone repository
+  #     uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: |
-        dnf -y --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
-        dnf -y distro-sync
-        yum install -y wget git-lfs unzip python3
-        wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
-        unzip gradle-6.2.2-bin.zip
+  #   - name: Install dependencies
+  #     run: |
+  #       dnf -y --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
+  #       dnf -y distro-sync
+  #       yum group install -y "Development Tools"
+  #       yum install -y wget git-lfs unzip python3 cmake
+  #       wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
+  #       unzip gradle-6.2.2-bin.zip
 
-    - name: Clone
-      run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
-        git clone https://github.com/openvinotoolkit/testdata
-        cd testdata && git lfs pull
+  #   - name: Clone
+  #     run: |
+  #       git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
+  #       git clone https://github.com/openvinotoolkit/testdata
+  #       cd testdata && git lfs pull
 
-    - name: Install Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: '11.0.2'
+  #   - name: Install Java
+  #     uses: actions/setup-java@v1
+  #     with:
+  #       java-version: '11.0.2'
 
-    - name: Install OpenVINO
-      run: |
-        tee > /tmp/openvino-2022.repo << EOF
-        [OpenVINO]
-        name=Intel(R) Distribution of OpenVINO 2022
-        baseurl=https://yum.repos.intel.com/openvino/2022
-        enabled=1
-        gpgcheck=1
-        repo_gpgcheck=1
-        gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-        EOF
-        mv /tmp/openvino-2022.repo /etc/yum.repos.d
-        yum repolist | grep -i openvino
-        yum install -y yum-utils openvino-2022.1.0
+  #   - name: Install OpenVINO
+  #     run: |
+  #       tee > /tmp/openvino-2022.repo << EOF
+  #       [OpenVINO]
+  #       name=Intel(R) Distribution of OpenVINO 2022
+  #       baseurl=https://yum.repos.intel.com/openvino/2022
+  #       enabled=1
+  #       gpgcheck=1
+  #       repo_gpgcheck=1
+  #       gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+  #       EOF
+  #       mv /tmp/openvino-2022.repo /etc/yum.repos.d
+  #       yum repolist | grep -i openvino
+  #       yum install -y yum-utils openvino-2022.1.0
 
-    - name: Build bindings
-      run: |
-        source /opt/intel/openvino_2022/setupvars.sh
-        cp ../../../settings.gradle ../../../build.gradle .
-        ../../../gradle-6.2.2/bin/gradle clean build --info
-        ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
-      working-directory: openvino_contrib/modules/java_api
+  #   - name: Build bindings
+  #     run: |
+  #       source /opt/intel/openvino_2022/setupvars.sh
+  #       mkdir build_api && cd build_api
+  #       cmake -DCMAKE_BUILD_TYPE=Release ../openvino_contrib/modules/java_api
+  #       make -j$(nproc --all)
+  #       cp *.so /opt/intel/openvino_2022/runtime/lib/intel64
 
-    - name: Upload
-      uses: actions/upload-artifact@v2
-      with:
-        name: "pkg_lnx"
-        path: "openvino_contrib/modules/java_api/build/libs/*.jar"
+  #   - name: Build package
+  #     run: |
+  #       source /opt/intel/openvino_2022/setupvars.sh
+  #       cp ../../../settings.gradle ../../../build.gradle .
+  #       ../../../gradle-6.2.2/bin/gradle clean build --info
+  #       ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+  #     working-directory: openvino_contrib/modules/java_api
+
+  #   - name: Upload
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: "pkg_lnx"
+  #       path: "openvino_contrib/modules/java_api/build/libs/*.jar"
 
   run_win:
     runs-on: windows-2019
@@ -84,9 +93,9 @@ jobs:
 
     - name: Download OpenVINO
       run: |
-        curl https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe -o openvino.exe
-        start /WAIT openvino.exe --s --a install --eula=accept --output=log.txt
-      shell: cmd
+        Invoke-WebRequest https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe -OutFile openvino.exe
+        Start-Process -FilePath "openvino.exe" -ArgumentList "--s --a install --eula=accept --output=log.txt"
+      shell: pwsh
 
     - name: Build bindings
       run: |
@@ -125,10 +134,18 @@ jobs:
       run: |
         wget -q https://registrationcenter-download.intel.com/akdlm/irc_nas/18616/m_openvino_toolkit_p_2022.1.0.643_offline.dmg
         hdiutil attach m_openvino_toolkit_p_2022.1.0.643_offline.dmg
-        cd /Volumes/m_openvino_toolkit_p_2022.1.0.643_offline/m_openvino_toolkit_p_2022.1.0.643_offline.app/Contents/MacOS/
-        sudo ./install.sh -s silent.cfg --accept_eula
+        cd /Volumes/m_openvino_toolkit_p_2022.1.0.643_offline/bootstrapper.app/Contents/MacOS/
+        sudo ./install.sh -s --eula
 
     - name: Build bindings
+      run: |
+        source /opt/intel/openvino_2022/setupvars.sh
+        mkdir build_api && cd build_api
+        cmake -DCMAKE_BUILD_TYPE=Release ../openvino_contrib/modules/java_api
+        make -j$(nproc --all)
+        cp *.so /opt/intel/openvino_2022/runtime/lib/intel64/Release
+
+    - name: Build package
       run: |
         source /opt/intel/openvino_2022/setupvars.sh
         cp ../../../settings.gradle ../../../build.gradle .
