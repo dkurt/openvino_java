@@ -65,7 +65,7 @@ jobs:
         path: "openvino_contrib/modules/java_api/build/libs/*.jar"
 
   run_win:
-    runs-on: windows-latest
+    runs-on: windows-2019
     name: Build on Windows
 
     steps:
@@ -84,7 +84,7 @@ jobs:
 
     - name: Download OpenVINO
       run: |
-        powershell -command "Invoke-WebRequest https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe -OutFile openvino.exe"
+        curl https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe -o openvino.exe
         start /WAIT openvino.exe --s --a install --eula=accept --output=log.txt
       shell: cmd
 
@@ -100,58 +100,44 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v2
       with:
-        name: "pkg_lnx"
+        name: "pkg_win"
         path: "openvino_contrib\\modules\\java_api\\build\\libs\\*.jar"
 
-  # run_mac:
-  #   runs-on: macos-latest
-  #   name: Build on Mac
+  run_mac:
+    runs-on: macos-latest
+    name: Build on Mac
 
-  #   steps:
-  #   - name: Clone repository
-  #     uses: actions/checkout@v2
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
 
-  #   - name: Clone
-  #     run: |
-  #       git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
-  #       git clone https://github.com/openvinotoolkit/testdata
+    - name: Clone
+      run: |
+        git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
+        git clone https://github.com/openvinotoolkit/testdata
 
-  #   - name: Install Java
-  #     uses: actions/setup-java@v1
-  #     with:
-  #       java-version: '11.0.2'
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.2'
 
-  #   - name: Install OpenVINO
-  #     run: |
-  #       wget -q https://registrationcenter-download.intel.com/akdlm/irc_nas/18616/m_openvino_toolkit_p_2022.1.0.643_offline.dmg
-  #       hdiutil attach m_openvino_toolkit_p_2021.4.752.dmg
-  #       cd /Volumes/m_openvino_toolkit_p_2021.4.752/m_openvino_toolkit_p_2021.4.752.app/Contents/MacOS/
-  #       sudo ./install.sh -s silent.cfg --accept_eula
+    - name: Install OpenVINO
+      run: |
+        wget -q https://registrationcenter-download.intel.com/akdlm/irc_nas/18616/m_openvino_toolkit_p_2022.1.0.643_offline.dmg
+        hdiutil attach m_openvino_toolkit_p_2022.1.0.643_offline.dmg
+        cd /Volumes/m_openvino_toolkit_p_2022.1.0.643_offline/m_openvino_toolkit_p_2022.1.0.643_offline.app/Contents/MacOS/
+        sudo ./install.sh -s silent.cfg --accept_eula
 
-  #   - name: Build bindings
-  #     run: |
-  #       mkdir build_api && cd build_api
-  #       source /opt/intel/openvino_2021/bin/setupvars.sh
-  #       cmake ../openvino_contrib/modules/java_api \
-  #         -DCMAKE_BUILD_TYPE=Release \
-  #         -DCMAKE_CXX_FLAGS="-std=c++11"
-  #       make -j$(nproc --all)
+    - name: Build bindings
+      run: |
+        source /opt/intel/openvino_2022/setupvars.sh
+        cp ../../../settings.gradle ../../../build.gradle .
+        ../../../gradle-6.2.2/bin/gradle clean build --info
+        ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+      working-directory: openvino_contrib/modules/java_api
 
-  #   - name: Publish
-  #     env:
-  #       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
-  #       ARTIFACTORY_PASS: ${{ secrets.ARTIFACTORY_PASS }}
-  #       VERSION: "${{env.BASE_VERSION}}-macosx-x86_64"
-  #     run: |
-  #       cd openvino_contrib/modules/java_api
-  #       mkdir native
-  #       mv ../../../build_api/*.dylib native
-  #       cp /opt/intel/openvino_2021/deployment_tools/ngraph/lib/lib* native
-  #       cp /opt/intel/openvino_2021/inference_engine/external/tbb/lib/lib* native
-  #       cp /opt/intel/openvino_2021/inference_engine/lib/intel64/lib* native
-  #       cp /opt/intel/openvino_2021/inference_engine/lib/intel64/plugins.xml native
-  #       cp /opt/intel/openvino_2021/inference_engine/lib/intel64/*.mvcmd native
-  #       ls native > resources_list.txt && cat resources_list.txt && mv resources_list.txt native
-
-  #       gradle clean build
-  #       gradle test artifactoryPublish -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: "pkg_mac"
+        path: "openvino_contrib/modules/java_api/build/libs/*.jar"
