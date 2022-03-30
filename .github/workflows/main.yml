@@ -20,7 +20,7 @@ jobs:
       run: |
         dnf -y --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
         dnf -y distro-sync
-        yum install -y wget git-lfs unzip
+        yum install -y wget git-lfs unzip python3
         wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
         unzip gradle-6.2.2-bin.zip
 
@@ -62,86 +62,46 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: "pkg_lnx"
-        path: "build/libs/*.jar"
-      working-directory: openvino_contrib/modules/java_api
+        path: "openvino_contrib/modules/java_api/build/libs/*.jar"
 
+  run_win:
+    runs-on: windows-latest
+    name: Build on Windows
 
-  #   - name: Publish
-  #     env:
-  #       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
-  #       ARTIFACTORY_PASS: ${{ secrets.ARTIFACTORY_PASS }}
-  #       VERSION: "${{env.BASE_VERSION}}-linux-x86_64"
-  #     run: |
-  #       cd openvino_contrib/modules/java_api
-  #       mkdir native
-  #       mv ../../../build_api/*.so native
-  #       cp /opt/intel/openvino_2021/deployment_tools/ngraph/lib/lib* native
-  #       cp /opt/intel/openvino_2021/inference_engine/external/tbb/lib/lib* native
-  #       cp /opt/intel/openvino_2021/inference_engine/lib/intel64/lib* native
-  #       cp /opt/intel/openvino_2021/inference_engine/lib/intel64/plugins.xml native
-  #       cp /opt/intel/openvino_2021/inference_engine/lib/intel64/cache.json native
-  #       cp /opt/intel/openvino_2021/inference_engine/lib/intel64/*.mvcmd native
-  #       ls native > resources_list.txt && cat resources_list.txt && mv resources_list.txt native
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
 
-  #       ../../../gradle-6.2.2/bin/gradle clean build
-  #       ../../../gradle-6.2.2/bin/gradle test artifactoryPublish -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+    - name: Clone
+      run: |
+        git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
+        git clone https://github.com/openvinotoolkit/testdata
 
-  # run_win:
-  #   runs-on: windows-latest
-  #   name: Build on Windows
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.2'
 
-  #   steps:
-  #   - name: Clone repository
-  #     uses: actions/checkout@v2
+    - name: Download OpenVINO
+      run: |
+        powershell -command "Invoke-WebRequest https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe -OutFile openvino.exe"
+        start /WAIT openvino.exe --s --a install --eula=accept --output=log.txt
+      shell: cmd
 
-  #   - name: Clone
-  #     run: |
-  #       git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
-  #       git clone https://github.com/openvinotoolkit/testdata
+    - name: Build bindings
+      run: |
+        call "C:\Program Files (x86)\intel\openvino_2022\setupvars.bat"
+        move ..\\..\\..\\settings.gradle ..\\..\\..\\build.gradle .
+        gradle clean build --info
+        gradle test -Prun_tests -DMODELS_PATH=..\\..\\..\\testdata -Ddevice=CPU --info
+      shell: cmd
+      working-directory: openvino_contrib\\modules\\java_api
 
-  #   - name: Install Java
-  #     uses: actions/setup-java@v1
-  #     with:
-  #       java-version: '11.0.2'
-
-  #   - name: Download OpenVINO
-  #     run: |
-  #       curl https://registrationcenter-download.intel.com/akdlm/irc_nas/17987/w_openvino_toolkit_p_2021.4.752.exe -o openvino.exe
-  #       start /WAIT openvino.exe --s --a install --eula=accept --output=log.txt
-  #     shell: cmd
-
-  #   - name: Build bindings
-  #     run: |
-  #       mkdir build_api && cd build_api
-  #       call "C:\Program Files (x86)\Intel\openvino_2021\bin\setupvars.bat"
-  #       cmake ..\openvino_contrib\modules\java_api -DCMAKE_BUILD_TYPE=Release
-  #       cmake --build . --config Release -j 2
-  #     shell: cmd
-
-  #   - name: Publish
-  #     env:
-  #       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
-  #       ARTIFACTORY_PASS: ${{ secrets.ARTIFACTORY_PASS }}
-  #       VERSION: "${{env.BASE_VERSION}}-windows-x86_64"
-  #     run: |
-  #       set OPENVINO_DIR="C:\Program Files (x86)\Intel\openvino_2021\deployment_tools\inference_engine"
-  #       cd openvino_contrib\modules\java_api
-  #       mkdir native
-  #       move ..\\..\\..\\build_api\\Release\\*.dll native
-  #       move %OPENVINO_DIR%\bin\intel64\Release\*.dll native
-  #       move %OPENVINO_DIR%\bin\intel64\Release\plugins.xml native
-  #       move %OPENVINO_DIR%\bin\intel64\Release\cache.json native
-  #       move %OPENVINO_DIR%\bin\intel64\Release\*.mvcmd native
-  #       move %OPENVINO_DIR%\external\tbb\bin\tbb.dll native
-  #       move %OPENVINO_DIR%\external\tbb\bin\tbbmalloc.dll native
-  #       move %OPENVINO_DIR%\..\ngraph\lib\*.dll native
-  #       move native\\libprotobuf.dll native\\protobuf.dll
-  #       dir /b /a-d native >resources_list.txt
-  #       move resources_list.txt native
-
-  #       gradle clean build
-  #       gradle test artifactoryPublish -Prun_tests -DMODELS_PATH=..\\..\\..\\testdata -Ddevice=CPU --info
-  #     shell: cmd
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: "pkg_lnx"
+        path: "openvino_contrib\\modules\\java_api\\build\\libs\\*.jar"
 
   # run_mac:
   #   runs-on: macos-latest
@@ -163,7 +123,7 @@ jobs:
 
   #   - name: Install OpenVINO
   #     run: |
-  #       wget -q https://registrationcenter-download.intel.com/akdlm/irc_nas/17986/m_openvino_toolkit_p_2021.4.752.dmg
+  #       wget -q https://registrationcenter-download.intel.com/akdlm/irc_nas/18616/m_openvino_toolkit_p_2022.1.0.643_offline.dmg
   #       hdiutil attach m_openvino_toolkit_p_2021.4.752.dmg
   #       cd /Volumes/m_openvino_toolkit_p_2021.4.752/m_openvino_toolkit_p_2021.4.752.app/Contents/MacOS/
   #       sudo ./install.sh -s silent.cfg --accept_eula
