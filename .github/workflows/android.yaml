@@ -1,4 +1,4 @@
-name: CI
+name: Build for Android
 
 on:
   push:
@@ -57,6 +57,10 @@ jobs:
         make --jobs=$(nproc --all)
         cmake --install . --prefix ../openvino_install
 
+    - name: Strip libraries
+      run: |
+        android-ndk/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip openvino_install/runtime/lib/aarch64/*.so
+
     - name: Download SDK
       run: |
          wget -q https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
@@ -66,8 +70,15 @@ jobs:
     - name: Build package
       run: |
         source openvino_install/setupvars.sh
-        
+        export ANDROID_SDK_ROOT=$(realpath ./sdk)
+
         cd openvino_contrib/modules/java_api
-        cp ../../../settings.gradle ../../../build.gradle .
+        cp ../../../settings.gradle .
+        cp ../../../build_android.gradle . build.gradle
         ../../../gradle-6.5/bin/gradle clean build -x lint --info
 
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: "pkg_android"
+        path: "openvino_contrib/modules/java_api/build/outputs/aar/*-release.aar"

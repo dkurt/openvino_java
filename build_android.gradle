@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.1'
+    }
+}
+
+allprojects {
+    apply plugin: 'com.android.library'
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+def nativeLibs = System.getenv('INTEL_OPENVINO_DIR') + "/runtime/lib"
+
+// Android expects specific JNI folder name
+copy {
+    from nativeLibs + '/aarch64'
+    into nativeLibs + '/arm64-v8a'
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.2"
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 30
+    }
+
+    compileOptions{
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            java {
+                srcDirs = ["org"]
+            }
+            jniLibs.srcDirs = [nativeLibs]
+            resources {
+                srcDirs = [nativeLibs + "/arm64-v8a"]  // For plugins.xml
+            }
+        }
+    }
+}

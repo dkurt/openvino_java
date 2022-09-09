@@ -1,11 +1,11 @@
-name: CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-
-jobs:
+# name: Build for Linux, Windows, Mac
+#
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#
+# jobs:
 #   run_linux:
 #     runs-on: ubuntu-18.04
 #     name: Build on Linux
