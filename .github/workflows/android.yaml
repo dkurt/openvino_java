@@ -38,6 +38,7 @@ jobs:
 
     - name: Build OpenVINO
       run: |
+        sudo apt-get install -y scons
         mkdir openvino_build && cd openvino_build
 
         cmake \
