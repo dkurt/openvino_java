@@ -82,8 +82,13 @@ jobs:
     - name: Build package
       run: |
         export ANDROID_SDK_ROOT=$(realpath ./sdk)
+
+        mkdir -p src/main/
+        cp ../../../AndroidManifest.xml src/main/
+
         echo "rootProject.name = 'openvino'" > settings.gradle
         cp ../../../build_android.gradle build.gradle
+
         ../../../gradle-6.5/bin/gradle clean build -x lint --info
       working-directory: openvino_contrib/modules/java_api
 
