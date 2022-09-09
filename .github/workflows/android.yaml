@@ -78,7 +78,7 @@ jobs:
 
     - name: Build package
       run: |
-        source openvino_install/setupvars.sh
+        source ../../../openvino_install/setupvars.sh
         export ANDROID_SDK_ROOT=$(realpath ./sdk)
 
         mkdir -p src/main/
