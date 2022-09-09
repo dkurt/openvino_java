@@ -16,8 +16,8 @@ jobs:
 
     - name: Download Gradle
       run: |
-        wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
-        unzip gradle-6.2.2-bin.zip
+        wget -q https://downloads.gradle-dn.com/distributions/gradle-6.5-bin.zip
+        unzip gradle-6.5-bin.zip
 
     - name: Download NDK
       run: |
@@ -51,15 +51,16 @@ jobs:
           -DENABLE_SAMPLES=OFF \
           -DTHREADING=SEQ \
           -DBUILD_nvidia_plugin=OFF \
-          -DIE_EXTRA_MODULES=$HOME/openvino_contrib/modules \
-          -DCMAKE_TOOLCHAIN_FILE=$HOME/android-ndk/build/cmake/android.toolchain.cmake $HOME/openvino
+          -DIE_EXTRA_MODULES=../openvino_contrib/modules \
+          -DCMAKE_TOOLCHAIN_FILE=../android-ndk/build/cmake/android.toolchain.cmake ../openvino
 
         make --jobs=$(nproc --all)
-        cmake --install . --prefix $HOME/openvino_install
+        cmake --install . --prefix ../openvino_install
 
     - name: Build package
       run: |
-        source $HOME/openvino_install/setupvars.sh
-        cp $HOME/settings.gradle $HOME/build.gradle .
-        gradle clean build --info
-      working-directory: openvino_contrib/modules/java_api
+        source openvino_install/setupvars.sh
+        
+        cd openvino_contrib/modules/java_api
+        cp ../../../settings.gradle ../../../build.gradle .
+        ../../../gradle-6.5/bin/gradle clean build --info
