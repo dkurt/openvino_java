@@ -43,31 +43,31 @@ jobs:
       with:
         java-version: '11.0.2'
 
-    # - name: Build OpenVINO
-    #   run: |
-    #     sudo apt-get install -y scons
-    #     mkdir openvino_build && cd openvino_build
-    #
-    #     cmake \
-    #       -DANDROID_ABI=arm64-v8a \
-    #       -DANDROID_PLATFORM=21 \
-    #       -DANDROID_STL=c++_shared \
-    #       -DENABLE_INTEL_MYRIAD=OFF \
-    #       -DENABLE_CLDNN=OFF \
-    #       -DENABLE_OPENCV=OFF \
-    #       -DENABLE_TEMPLATE=OFF \
-    #       -DENABLE_SAMPLES=OFF \
-    #       -DTHREADING=SEQ \
-    #       -DBUILD_nvidia_plugin=OFF \
-    #       -DIE_EXTRA_MODULES=../openvino_contrib/modules \
-    #       -DCMAKE_TOOLCHAIN_FILE=../android-ndk/build/cmake/android.toolchain.cmake ../openvino
-    #
-    #     make --jobs=$(nproc --all)
-    #     cmake --install . --prefix ../openvino_install
+    - name: Build OpenVINO
+      run: |
+        sudo apt-get install -y scons
+        mkdir openvino_build && cd openvino_build
 
-    # - name: Strip libraries
-    #   run: |
-    #     android-ndk/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip openvino_install/runtime/lib/aarch64/*.so
+        cmake \
+          -DANDROID_ABI=arm64-v8a \
+          -DANDROID_PLATFORM=21 \
+          -DANDROID_STL=c++_shared \
+          -DENABLE_INTEL_MYRIAD=OFF \
+          -DENABLE_CLDNN=OFF \
+          -DENABLE_OPENCV=OFF \
+          -DENABLE_TEMPLATE=OFF \
+          -DENABLE_SAMPLES=OFF \
+          -DTHREADING=SEQ \
+          -DBUILD_nvidia_plugin=OFF \
+          -DIE_EXTRA_MODULES=../openvino_contrib/modules \
+          -DCMAKE_TOOLCHAIN_FILE=../android-ndk/build/cmake/android.toolchain.cmake ../openvino
+
+        make --jobs=$(nproc --all)
+        cmake --install . --prefix ../openvino_install
+
+    - name: Strip libraries
+      run: |
+        android-ndk/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip openvino_install/runtime/lib/aarch64/*.so
 
     - name: Download SDK
       run: |
@@ -76,11 +76,9 @@ jobs:
          yes | ./sdk/cmdline-tools/bin/sdkmanager --licenses --sdk_root=./sdk/
       working-directory: openvino_contrib/modules/java_api
 
-    # - name: Build package
-    #   run: |
-    #     source openvino_install/setupvars.sh
     - name: Build package
       run: |
+        source openvino_install/setupvars.sh
         export ANDROID_SDK_ROOT=$(realpath ./sdk)
 
         mkdir -p src/main/
