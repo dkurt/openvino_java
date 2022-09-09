@@ -27,9 +27,8 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
-        git clone https://github.com/openvinotoolkit/openvino -b releases/2022/2
-        cd openvino && git submodule init && git submodule update --recursive
+        git clone --recurse-submodules https://github.com/openvinotoolkit/openvino_contrib --depth 1
+        git clone --recurse-submodules https://github.com/openvinotoolkit/openvino -b releases/2022/2
 
     - name: Install Java
       uses: actions/setup-java@v1
@@ -58,10 +57,17 @@ jobs:
         make --jobs=$(nproc --all)
         cmake --install . --prefix ../openvino_install
 
+    - name: Download SDK
+      run: |
+         wget -q https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
+         unzip commandlinetools-linux-8512546_latest.zip -d sdk
+         yes | ./sdk/cmdline-tools/bin/sdkmanager --licenses --sdk_root=./sdk/
+
     - name: Build package
       run: |
         source openvino_install/setupvars.sh
         
         cd openvino_contrib/modules/java_api
         cp ../../../settings.gradle ../../../build.gradle .
-        ../../../gradle-6.5/bin/gradle clean build --info
+        ../../../gradle-6.5/bin/gradle clean build -x lint --info
+
