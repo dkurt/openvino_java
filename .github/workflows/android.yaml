@@ -1,9 +1,6 @@
 name: Build for Android
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
+on: [workflow_dispatch]
 
 jobs:
   build_android:
@@ -27,8 +24,8 @@ jobs:
 
     - name: Clone
       run: |
-        git clone --recurse-submodules https://github.com/openvinotoolkit/openvino_contrib --depth 1
-        git clone --recurse-submodules https://github.com/dkurt/openvino -b android_readers_releases/2022/2
+        git clone --recurse-submodules https://github.com/dkurt/openvino_contrib -b java_release_ireq
+        git clone --recurse-submodules https://github.com/openvinotoolkit/openvino -b releases/2022/2
         cd openvino && echo "https://github.com/openvinotoolkit/openvino/commit/$(git rev-parse HEAD)" > ../versions.txt && cd ..
         cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
 
