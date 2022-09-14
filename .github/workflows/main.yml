@@ -1,9 +1,6 @@
-name: CI
+name: Build for Linux, Windows, Mac
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
+on: [workflow_dispatch]
 
 jobs:
   run_linux:

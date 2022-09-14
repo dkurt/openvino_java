@@ -1,0 +1,94 @@
+name: Build for Android
+
+on: [workflow_dispatch]
+
+jobs:
+  build_android:
+    runs-on: ubuntu-20.04
+    name: Build for Android
+
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+
+    - name: Download Gradle
+      run: |
+        wget -q https://downloads.gradle-dn.com/distributions/gradle-6.5-bin.zip
+        unzip gradle-6.5-bin.zip
+
+    - name: Download NDK
+      run: |
+        wget -q https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
+        unzip android-ndk-r20-linux-x86_64.zip
+        mv android-ndk-r20 android-ndk
+
+    - name: Clone
+      run: |
+        git clone --recurse-submodules https://github.com/dkurt/openvino_contrib -b java_release_ireq
+        git clone --recurse-submodules https://github.com/openvinotoolkit/openvino -b releases/2022/2
+        cd openvino && echo "https://github.com/openvinotoolkit/openvino/commit/$(git rev-parse HEAD)" > ../versions.txt && cd ..
+        cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
+
+    - name: Upload versions.txt
+      uses: actions/upload-artifact@v2
+      with:
+        name: "versions"
+        path: "versions.txt"
+
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.2'
+
+    - name: Build OpenVINO
+      run: |
+        sudo apt-get install -y scons
+        mkdir openvino_build && cd openvino_build
+
+        cmake \
+          -DANDROID_ABI=arm64-v8a \
+          -DANDROID_PLATFORM=21 \
+          -DANDROID_STL=c++_shared \
+          -DENABLE_INTEL_MYRIAD=OFF \
+          -DENABLE_CLDNN=OFF \
+          -DENABLE_OPENCV=OFF \
+          -DENABLE_TEMPLATE=OFF \
+          -DENABLE_SAMPLES=OFF \
+          -DTHREADING=SEQ \
+          -DBUILD_nvidia_plugin=OFF \
+          -DIE_EXTRA_MODULES=../openvino_contrib/modules \
+          -DCMAKE_TOOLCHAIN_FILE=../android-ndk/build/cmake/android.toolchain.cmake ../openvino
+
+        make --jobs=$(nproc --all)
+        cmake --install . --prefix ../openvino_install
+
+    - name: Strip libraries
+      run: |
+        android-ndk/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip openvino_install/runtime/lib/aarch64/*.so
+
+    - name: Download SDK
+      run: |
+         wget -q https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
+         unzip commandlinetools-linux-8512546_latest.zip -d sdk
+         yes | ./sdk/cmdline-tools/bin/sdkmanager --licenses --sdk_root=./sdk/
+      working-directory: openvino_contrib/modules/java_api
+
+    - name: Build package
+      run: |
+        source ../../../openvino_install/setupvars.sh
+        export ANDROID_SDK_ROOT=$(realpath ./sdk)
+
+        mkdir -p src/main/
+        cp ../../../AndroidManifest.xml src/main/
+
+        echo "rootProject.name = 'openvino'" > settings.gradle
+        cp ../../../build_android.gradle build.gradle
+
+        ../../../gradle-6.5/bin/gradle clean build -x lint --info
+      working-directory: openvino_contrib/modules/java_api
+
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: "pkg_android"
+        path: "openvino_contrib/modules/java_api/build/outputs/aar/*-release.aar"
