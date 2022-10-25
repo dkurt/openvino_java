@@ -44,27 +44,28 @@ jobs:
       run: |
         sudo apt-get install -y scons
 
-    - name: Build OpenVINO (ARM64)
-      run: |
-        cmake \
-          -DANDROID_ABI=arm64-v8a \
-          -DANDROID_PLATFORM=21 \
-          -DANDROID_STL=c++_shared \
-          -DCMAKE_STRIP=$(realpath android-ndk/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip) \
-          -DENABLE_INTEL_MYRIAD=OFF \
-          -DENABLE_CLDNN=OFF \
-          -DENABLE_OPENCV=OFF \
-          -DENABLE_TEMPLATE=OFF \
-          -DENABLE_SAMPLES=OFF \
-          -DTHREADING=SEQ \
-          -DBUILD_nvidia_plugin=OFF \
-          -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
-          -DCMAKE_TOOLCHAIN_FILE=$(realpath android-ndk/build/cmake/android.toolchain.cmake) \
-          -S openvino -B openvino_build_arm64
+    # - name: Build OpenVINO (ARM64)
+    #   run: |
+    #     cmake \
+    #       -DANDROID_ABI=arm64-v8a \
+    #       -DANDROID_PLATFORM=21 \
+    #       -DANDROID_STL=c++_shared \
+    #       -DCMAKE_STRIP=$(realpath android-ndk/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip) \
+    #       -DENABLE_INTEL_MYRIAD=OFF \
+    #       -DENABLE_CLDNN=OFF \
+    #       -DENABLE_OPENCV=OFF \
+    #       -DENABLE_TEMPLATE=OFF \
+    #       -DENABLE_SAMPLES=OFF \
+    #       -DTHREADING=SEQ \
+    #       -DBUILD_nvidia_plugin=OFF \
+    #       -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
+    #       -DCMAKE_TOOLCHAIN_FILE=$(realpath android-ndk/build/cmake/android.toolchain.cmake) \
+    #       -S openvino -B openvino_build_arm64
 
-        cmake --build openvino_build_arm64 -j$(nproc --all)
-        cmake --install . --prefix openvino_install_arm64
-        mv openvino_install_arm64/runtime/lib/aarch64 openvino_install_arm64/runtime/lib/arm64-v8a
+    #     cmake --build openvino_build_arm64 -j$(nproc --all)
+    #     cmake --install openvino_build_arm64 --prefix openvino_install_arm64
+          # rm -f openvino_install_arm64
+    #     mv openvino_install_arm64/runtime/lib/aarch64 openvino_install_arm64/runtime/lib/arm64-v8a
 
     - name: Build OpenVINO (x86_64)
       run: |
@@ -83,7 +84,8 @@ jobs:
           -S openvino -B openvino_build_x86
 
         cmake --build openvino_build_x86 -j$(nproc --all)
-        cmake --install . --prefix openvino_install_x86
+        cmake --install openvino_build_x86 --prefix openvino_install_x86
+        rm -f openvino_build_x86
         mv openvino_install_x86/runtime/lib/intel64 openvino_install_x86/runtime/lib/x86_64
 
     - name: Download SDK
@@ -93,23 +95,23 @@ jobs:
          yes | ./sdk/cmdline-tools/bin/sdkmanager --licenses --sdk_root=./sdk/
       working-directory: openvino_contrib/modules/java_api
 
-    - name: Build package (ARM64)
-      run: |
-        source ../../../openvino_install_arm64/setupvars.sh
-        export ANDROID_SDK_ROOT=$(realpath ./sdk)
+    # - name: Build package (ARM64)
+    #   run: |
+    #     source ../../../openvino_install_arm64/setupvars.sh
+    #     export ANDROID_SDK_ROOT=$(realpath ./sdk)
 
-        mkdir -p src/main/
-        cp ../../../AndroidManifest.xml src/main/
-        cp ../../../build_android.gradle build.gradle
+    #     mkdir -p src/main/
+    #     cp ../../../AndroidManifest.xml src/main/
+    #     cp ../../../build_android.gradle build.gradle
 
-        ../../../gradle-6.5/bin/gradle clean build -x lint --info
-      working-directory: openvino_contrib/modules/java_api
+    #     ../../../gradle-6.5/bin/gradle clean build -x lint --info
+    #   working-directory: openvino_contrib/modules/java_api
 
-    - name: Upload (ARM64)
-      uses: actions/upload-artifact@v2
-      with:
-        name: "pkg_android_arm64"
-        path: "openvino_contrib/modules/java_api/build/outputs/aar/*-release.aar"
+    # - name: Upload (ARM64)
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: "pkg_android_arm64"
+    #     path: "openvino_contrib/modules/java_api/build/outputs/aar/*-release.aar"
 
     - name: Build package (x86_64)
       run: |
