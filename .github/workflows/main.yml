@@ -6,8 +6,6 @@ jobs:
   run_linux:
     runs-on: ubuntu-18.04
     name: Build on Linux
-    container:
-      centos:centos8.4.2105
 
     steps:
     - name: Clone repository
@@ -15,10 +13,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        dnf -y --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
-        dnf -y distro-sync
-        yum group install -y "Development Tools"
-        yum install -y wget git-lfs unzip python3 cmake
         wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
         unzip gradle-6.2.2-bin.zip
 
@@ -35,18 +29,9 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        tee > /tmp/openvino-2022.repo << EOF
-        [OpenVINO]
-        name=Intel(R) Distribution of OpenVINO 2022
-        baseurl=https://yum.repos.intel.com/openvino/2022
-        enabled=1
-        gpgcheck=1
-        repo_gpgcheck=1
-        gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-        EOF
-        mv /tmp/openvino-2022.repo /etc/yum.repos.d
-        yum repolist | grep -i openvino
-        yum install -y yum-utils openvino-2022.2.0
+        wget -q https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/l_openvino_toolkit_rhel8_2022.2.0.7713.af16ea1d79a_x86_64.tgz -O openvino.tgz
+        sudo mkdir -p /opt/intel/openvino_2022
+        sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
 
     - name: Build bindings
       run: |
@@ -142,7 +127,7 @@ jobs:
     - name: Install OpenVINO
       run: |
         wget -q https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/m_openvino_toolkit_osx_2022.2.0.7713.af16ea1d79a_x86_64.tgz -O openvino.tgz
-        sudo mkdir /opt/intel/openvino_2022
+        sudo mkdir -p /opt/intel/openvino_2022
         sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
 
     - name: Build bindings
