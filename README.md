@@ -1,5 +1,9 @@
 # Java bindings for Intel OpenVINO
 
+**NOTE**: This is an unofficial build farm for OpenVINO in Java for Linux, Windows and Mac (x86) and Android (x86 and ARM64)
+
+## How to use
+
 Setup OpenVINO with Gradle:
 
 ```gradle
