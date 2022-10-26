@@ -18,7 +18,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
+        git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
         git clone https://github.com/openvinotoolkit/testdata
         cd testdata && git lfs pull
 
@@ -116,13 +116,18 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
+        git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
         git clone https://github.com/openvinotoolkit/testdata
 
     - name: Install Java
       uses: actions/setup-java@v1
       with:
         java-version: '11.0.2'
+
+    - name: Setup Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
 
     - name: Install OpenVINO
       run: |
