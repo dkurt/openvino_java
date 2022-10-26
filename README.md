@@ -29,3 +29,7 @@ dependencies {
 
 
 Or download from [releases](https://github.com/dkurt/openvino_java/releases) page.
+
+## Tutorials
+* [Audio Recognition in Android with OpenVINO](https://medium.com/@dmitry.kurtaev/audio-recognition-in-android-with-openvino-5d51e71f1426)
+* [Sign language recognition on Android with Intel OpenVINO](https://medium.com/@anna.likholat/sign-language-recognition-on-android-with-intel-openvino-1296d76bfa5e)
