@@ -120,7 +120,6 @@ jobs:
         cmake --install openvino_build_x86 --prefix openvino_install_x86
 
         cp android-ndk/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_shared.so openvino_install_x86/runtime/lib/intel64
-        cp openvino/temp/tbb/lib/libtbb.so openvino/temp/tbb/lib/libtbbmalloc.so openvino_install_x86/runtime/lib/intel64
 
     - name: Strip libraries (x86_64)
       run: |
