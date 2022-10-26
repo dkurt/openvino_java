@@ -78,7 +78,6 @@ jobs:
     - name: Download OpenVINO
       run: |
         Invoke-WebRequest https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/w_openvino_toolkit_windows_2022.2.0.7713.af16ea1d79a_x86_64.zip -OutFile openvino.zip
-        New-Item "C:\Program Files (x86)\Intel"
         Expand-Archive -Path openvino.zip -DestinationPath "C:\Program Files (x86)\Intel"
         Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2022.2.0.7713.af16ea1d79a_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino_2022"
       shell: pwsh
