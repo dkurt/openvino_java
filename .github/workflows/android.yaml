@@ -1,6 +1,6 @@
 name: Build for Android
 
-on: [workflow_dispatch, pull_request]
+on: [workflow_dispatch]
 
 jobs:
   build_android:
@@ -110,6 +110,7 @@ jobs:
           -DENABLE_OPENCV=OFF \
           -DENABLE_TEMPLATE=OFF \
           -DENABLE_SAMPLES=OFF \
+          -DTHREADING=SEQ \
           -DBUILD_nvidia_plugin=OFF \
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
           -DCMAKE_TOOLCHAIN_FILE=$(realpath android-ndk/build/cmake/android.toolchain.cmake) \
