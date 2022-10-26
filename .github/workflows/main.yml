@@ -1,6 +1,6 @@
 name: Build for Linux, Windows, Mac
 
-on: [workflow_dispatch, pull_request]
+on: [workflow_dispatch]
 
 jobs:
   run_linux:
@@ -21,6 +21,14 @@ jobs:
         git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
         git clone https://github.com/openvinotoolkit/testdata
         cd testdata && git lfs pull
+
+        cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
+
+    - name: Upload versions.txt
+      uses: actions/upload-artifact@v2
+      with:
+        name: "versions"
+        path: "versions.txt"
 
     - name: Install Java
       uses: actions/setup-java@v1
