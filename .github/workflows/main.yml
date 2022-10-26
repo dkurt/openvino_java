@@ -46,7 +46,7 @@ jobs:
         EOF
         mv /tmp/openvino-2022.repo /etc/yum.repos.d
         yum repolist | grep -i openvino
-        yum install -y yum-utils openvino-2022.1.0
+        yum install -y yum-utils openvino-2022.2.0
 
     - name: Build bindings
       run: |
@@ -72,54 +72,54 @@ jobs:
         name: "pkg_lnx"
         path: "openvino_contrib/modules/java_api/build/libs/*.jar"
 
-  run_win:
-    runs-on: windows-latest
-    name: Build on Windows
+#   run_win:
+#     runs-on: windows-latest
+#     name: Build on Windows
 
-    steps:
-    - name: Clone repository
-      uses: actions/checkout@v2
+#     steps:
+#     - name: Clone repository
+#       uses: actions/checkout@v2
 
-    - name: Clone
-      run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
-        git clone https://github.com/openvinotoolkit/testdata
+#     - name: Clone
+#       run: |
+#         git clone https://github.com/openvinotoolkit/openvino_contrib --depth 1
+#         git clone https://github.com/openvinotoolkit/testdata
 
-    - name: Install Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: '11.0.2'
+#     - name: Install Java
+#       uses: actions/setup-java@v1
+#       with:
+#         java-version: '11.0.2'
 
-    - name: Download OpenVINO
-      run: |
-        Invoke-WebRequest https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe -OutFile openvino.exe
-        Start-Process -Wait -FilePath "openvino.exe" -ArgumentList "-s -a --silent --eula accept"
-      shell: pwsh
+#     - name: Download OpenVINO
+#       run: |
+#         Invoke-WebRequest https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe -OutFile openvino.exe
+#         Start-Process -Wait -FilePath "openvino.exe" -ArgumentList "-s -a --silent --eula accept"
+#       shell: pwsh
 
-    - name: Build bindings
-      run: |
-        mkdir build_api && cd build_api
-        call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
-        cmake ..\openvino_contrib\modules\java_api -DCMAKE_BUILD_TYPE=Release
-        cmake --build . --config Release -j 2
-        move Release\\*.dll "C:\Program Files (x86)\Intel\openvino_2022\runtime\bin\intel64\Release"
-      shell: cmd
+#     - name: Build bindings
+#       run: |
+#         mkdir build_api && cd build_api
+#         call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
+#         cmake ..\openvino_contrib\modules\java_api -DCMAKE_BUILD_TYPE=Release
+#         cmake --build . --config Release -j 2
+#         move Release\\*.dll "C:\Program Files (x86)\Intel\openvino_2022\runtime\bin\intel64\Release"
+#       shell: cmd
 
-    - name: Build package
-      run: |
-        call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
-        move ..\\..\\..\\settings.gradle .
-        move ..\\..\\..\\build.gradle .
-        gradle clean build --info
-        gradle test -Prun_tests -DMODELS_PATH=..\\..\\..\\testdata -Ddevice=CPU --info
-      shell: cmd
-      working-directory: openvino_contrib\\modules\\java_api
+#     - name: Build package
+#       run: |
+#         call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
+#         move ..\\..\\..\\settings.gradle .
+#         move ..\\..\\..\\build.gradle .
+#         gradle clean build --info
+#         gradle test -Prun_tests -DMODELS_PATH=..\\..\\..\\testdata -Ddevice=CPU --info
+#       shell: cmd
+#       working-directory: openvino_contrib\\modules\\java_api
 
-    - name: Upload
-      uses: actions/upload-artifact@v2
-      with:
-        name: "pkg_win"
-        path: "openvino_contrib\\modules\\java_api\\build\\libs\\*.jar"
+#     - name: Upload
+#       uses: actions/upload-artifact@v2
+#       with:
+#         name: "pkg_win"
+#         path: "openvino_contrib\\modules\\java_api\\build\\libs\\*.jar"
 
   run_mac:
     runs-on: macos-latest
@@ -141,10 +141,9 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://registrationcenter-download.intel.com/akdlm/irc_nas/18616/m_openvino_toolkit_p_2022.1.0.643_offline.dmg
-        hdiutil attach m_openvino_toolkit_p_2022.1.0.643_offline.dmg
-        cd /Volumes/m_openvino_toolkit_p_2022.1.0.643_offline/bootstrapper.app/Contents/MacOS/
-        sudo ./install.sh -s --eula=accept
+        wget -q https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/m_openvino_toolkit_osx_2022.2.0.7713.af16ea1d79a_x86_64.tgz -O openvino.tgz
+        sudo mkdir /opt/intel/openvino_2022
+        sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
 
     - name: Build bindings
       run: |
