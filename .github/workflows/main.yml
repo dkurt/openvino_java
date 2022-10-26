@@ -1,69 +1,69 @@
 name: Build for Linux, Windows, Mac
 
-on: [workflow_dispatch, pull_request]
+on: [workflow_dispatch]
 
 jobs:
-  # run_linux:
-  #   runs-on: ubuntu-18.04
-  #   name: Build on Linux
+  run_linux:
+    runs-on: ubuntu-18.04
+    name: Build on Linux
 
-  #   steps:
-  #   - name: Clone repository
-  #     uses: actions/checkout@v2
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
 
-  #   - name: Install dependencies
-  #     run: |
-  #       wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
-  #       unzip gradle-6.2.2-bin.zip
+    - name: Install dependencies
+      run: |
+        wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
+        unzip gradle-6.2.2-bin.zip
 
-  #   - name: Clone
-  #     run: |
-  #       git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
-  #       cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
+    - name: Clone
+      run: |
+        git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
+        cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
 
-  #       git clone https://github.com/openvinotoolkit/testdata
-  #       cd testdata && git lfs pull
+        git clone https://github.com/openvinotoolkit/testdata
+        cd testdata && git lfs pull
 
-  #   - name: Upload versions.txt
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: "versions"
-  #       path: "versions.txt"
+    - name: Upload versions.txt
+      uses: actions/upload-artifact@v2
+      with:
+        name: "versions"
+        path: "versions.txt"
 
-  #   - name: Install Java
-  #     uses: actions/setup-java@v1
-  #     with:
-  #       java-version: '11.0.2'
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.2'
 
-  #   - name: Install OpenVINO
-  #     run: |
-  #       wget -q https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/l_openvino_toolkit_rhel8_2022.2.0.7713.af16ea1d79a_x86_64.tgz -O openvino.tgz
-  #       sudo mkdir -p /opt/intel/openvino_2022
-  #       sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
+    - name: Install OpenVINO
+      run: |
+        wget -q https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/l_openvino_toolkit_rhel8_2022.2.0.7713.af16ea1d79a_x86_64.tgz -O openvino.tgz
+        sudo mkdir -p /opt/intel/openvino_2022
+        sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
 
-  #   - name: Build bindings
-  #     run: |
-  #       mkdir build_api && cd build_api
-  #       source /opt/intel/openvino_2022/setupvars.sh
-  #       cmake ../openvino_contrib/modules/java_api \
-  #         -DCMAKE_BUILD_TYPE=Release \
-  #         -DCMAKE_CXX_FLAGS="-std=c++11"
-  #       make -j$(nproc --all)
-  #       sudo cp *.so /opt/intel/openvino_2022/runtime/lib/intel64
+    - name: Build bindings
+      run: |
+        mkdir build_api && cd build_api
+        source /opt/intel/openvino_2022/setupvars.sh
+        cmake ../openvino_contrib/modules/java_api \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_FLAGS="-std=c++11"
+        make -j$(nproc --all)
+        sudo cp *.so /opt/intel/openvino_2022/runtime/lib/intel64
 
-  #   - name: Build package
-  #     run: |
-  #       source /opt/intel/openvino_2022/setupvars.sh
-  #       sed -i -E 's|2022.1|2022.2|' build.gradle
-  #       ../../../gradle-6.2.2/bin/gradle clean build --info
-  #       ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
-  #     working-directory: openvino_contrib/modules/java_api
+    - name: Build package
+      run: |
+        source /opt/intel/openvino_2022/setupvars.sh
+        sed -i -E 's|2022.1|2022.2|' build.gradle
+        ../../../gradle-6.2.2/bin/gradle clean build --info
+        ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+      working-directory: openvino_contrib/modules/java_api
 
-  #   - name: Upload
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: "pkg_lnx"
-  #       path: "openvino_contrib/modules/java_api/build/libs/*.jar"
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: "pkg_lnx"
+        path: "openvino_contrib/modules/java_api/build/libs/*.jar"
 
   run_win:
     runs-on: windows-latest
@@ -99,13 +99,18 @@ jobs:
         move Release\\*.dll "C:\Program Files (x86)\Intel\openvino_2022\runtime\bin\intel64\Release"
       shell: cmd
 
+    - name: Fix version
+      run: |
+        (Get-Content build.gradle) | ForEach-Object { $_ -replace "2022.1", "2022.2" } | Set-Content build.gradle
+      shell: pwsh
+      working-directory: openvino_contrib\\modules\\java_api
+
     - name: Build package
       run: |
-        "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
-        (Get-Content build.gradle) | ForEach-Object { $_ -replace "2022.1", "2022.2" } | Set-Content build.gradle
+        call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
         gradle clean build --info
         gradle test -Prun_tests -DMODELS_PATH=..\\..\\..\\testdata -Ddevice=CPU --info
-      shell: pwsh
+      shell: cmd
       working-directory: openvino_contrib\\modules\\java_api
 
     - name: Upload
@@ -114,55 +119,55 @@ jobs:
         name: "pkg_win"
         path: "openvino_contrib\\modules\\java_api\\build\\libs\\*.jar"
 
-  # run_mac:
-  #   runs-on: macos-latest
-  #   name: Build on Mac
+  run_mac:
+    runs-on: macos-latest
+    name: Build on Mac
 
-  #   steps:
-  #   - name: Clone repository
-  #     uses: actions/checkout@v2
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
 
-  #   - name: Clone
-  #     run: |
-  #       git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
-  #       git clone https://github.com/openvinotoolkit/testdata
+    - name: Clone
+      run: |
+        git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
+        git clone https://github.com/openvinotoolkit/testdata
 
-  #   - name: Install Java
-  #     uses: actions/setup-java@v1
-  #     with:
-  #       java-version: '11.0.2'
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.2'
 
-  #   - name: Setup Python 3.8
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: 3.8
+    - name: Setup Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
 
-  #   - name: Install OpenVINO
-  #     run: |
-  #       wget -q https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/m_openvino_toolkit_osx_2022.2.0.7713.af16ea1d79a_x86_64.tgz -O openvino.tgz
-  #       sudo mkdir -p /opt/intel/openvino_2022
-  #       sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
+    - name: Install OpenVINO
+      run: |
+        wget -q https://github.com/openvinotoolkit/openvino/releases/download/2022.2.0/m_openvino_toolkit_osx_2022.2.0.7713.af16ea1d79a_x86_64.tgz -O openvino.tgz
+        sudo mkdir -p /opt/intel/openvino_2022
+        sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
 
-  #   - name: Build bindings
-  #     run: |
-  #       mkdir build_api && cd build_api
-  #       source /opt/intel/openvino_2022/setupvars.sh
-  #       cmake ../openvino_contrib/modules/java_api \
-  #         -DCMAKE_BUILD_TYPE=Release \
-  #         -DCMAKE_CXX_FLAGS="-std=c++11"
-  #       make -j$(nproc --all)
-  #       sudo cp *.dylib /opt/intel/openvino_2022/runtime/lib/intel64/Release
+    - name: Build bindings
+      run: |
+        mkdir build_api && cd build_api
+        source /opt/intel/openvino_2022/setupvars.sh
+        cmake ../openvino_contrib/modules/java_api \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_FLAGS="-std=c++11"
+        make -j$(nproc --all)
+        sudo cp *.dylib /opt/intel/openvino_2022/runtime/lib/intel64/Release
 
-  #   - name: Build package
-  #     run: |
-  #       source /opt/intel/openvino_2022/setupvars.sh
-  #       sed -i -E 's|2022.1|2022.2|' build.gradle
-  #       gradle clean build --info
-  #       gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
-  #     working-directory: openvino_contrib/modules/java_api
+    - name: Build package
+      run: |
+        source /opt/intel/openvino_2022/setupvars.sh
+        sed -i -E 's|2022.1|2022.2|' build.gradle
+        gradle clean build --info
+        gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+      working-directory: openvino_contrib/modules/java_api
 
-  #   - name: Upload
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: "pkg_mac"
-  #       path: "openvino_contrib/modules/java_api/build/libs/*.jar"
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: "pkg_mac"
+        path: "openvino_contrib/modules/java_api/build/libs/*.jar"
