@@ -54,11 +54,12 @@ jobs:
 
     - name: Build OpenVINO (ARM64)
       run: |
+        export toolchain_prefix="llvm-"
         ${{env.CMAKE_DIR}}/bin/cmake \
           -DANDROID_ABI=arm64-v8a \
           -DANDROID_PLATFORM=32 \
           -DANDROID_STL=c++_shared \
-          -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android-legacy.toolchain.cmake \
+          -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DENABLE_INTEL_MYRIAD=OFF \
           -DENABLE_CLDNN=OFF \
