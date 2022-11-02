@@ -60,7 +60,7 @@ jobs:
           -DANDROID_STL=c++_shared \
           -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
-          -DARM_COMPUTE_TOOLCHAIN_PREFIX="llvm-" \
+          -DANDROID_TOOLCHAIN_PREFIX="${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-" \
           -DENABLE_INTEL_MYRIAD=OFF \
           -DENABLE_CLDNN=OFF \
           -DENABLE_OPENCV=OFF \
