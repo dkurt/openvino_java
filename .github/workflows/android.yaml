@@ -57,9 +57,9 @@ jobs:
         ${{env.CMAKE_DIR}}/bin/cmake \
           -DANDROID_ABI=arm64-v8a \
           -DANDROID_PLATFORM=32 \
+          -DANDROID_STL=c++_shared \
+          -DANDROID_TOOLCHAIN=clang \
           -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
-          -DANDROID_NDK=${{env.NDK_DIR}} \
-          -DCMAKE_ANDROID_NDK=${{env.NDK_DIR}} \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DENABLE_INTEL_MYRIAD=OFF \
           -DENABLE_CLDNN=OFF \
