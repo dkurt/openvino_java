@@ -77,7 +77,7 @@ jobs:
 
     - name: Strip libraries (ARM64)
       run: |
-        ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip openvino_install_arm64/runtime/lib/aarch64/*.so
+        ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip openvino_install_arm64/runtime/lib/aarch64/*.so
 
     - name: Clean space (ARM64)
       run: |
@@ -108,12 +108,11 @@ jobs:
       run: |
         ${{env.CMAKE_DIR}}/bin/cmake \
           -DANDROID_ABI=x86_64 \
-          -DANDROID_PLATFORM=21 \
+          -DANDROID_PLATFORM=32 \
           -DANDROID_STL=c++_shared \
           -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
-          -DANDROID_NDK=${{env.NDK_DIR}} \
-          -DCMAKE_ANDROID_NDK=${{env.NDK_DIR}} \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
+          -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF \
           -DENABLE_CLDNN=OFF \
           -DENABLE_OPENCV=OFF \
           -DENABLE_TEMPLATE=OFF \
@@ -127,11 +126,9 @@ jobs:
         ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_x86 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_x86 --prefix openvino_install_x86
 
-        cp ${{env.NDK_DIR}}/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_shared.so openvino_install_x86/runtime/lib/intel64
-
     - name: Strip libraries (x86_64)
       run: |
-        ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/x86_64-linux-android/bin/strip openvino_install_x86/runtime/lib/intel64/*.so
+        ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip openvino_install_arm64/runtime/lib/intel64/*.so
 
     - name: Clean space (x86_64)
       run: |
@@ -141,7 +138,7 @@ jobs:
     - name: Build package (x86_64)
       run: |
         source ../../../openvino_install_x86/setupvars.sh
-        export ANDROID_SDK_ROOT=$(realpath ./sdk)
+        export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
         mkdir -p src/main/
         cp ../../../AndroidManifest.xml src/main/
