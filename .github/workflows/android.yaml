@@ -70,8 +70,8 @@ jobs:
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
           -S openvino -B openvino_build_arm64
 
-        cmake --build openvino_build_arm64 -j$(nproc --all)
-        cmake --install openvino_build_arm64 --prefix openvino_install_arm64
+        ${GITHUB_WORKSPACE}/sdk/cmake/${{env.CMAKE_VERSION}}/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
+        ${GITHUB_WORKSPACE}/sdk/cmake/${{env.CMAKE_VERSION}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
 
     - name: Strip libraries (ARM64)
       run: |
