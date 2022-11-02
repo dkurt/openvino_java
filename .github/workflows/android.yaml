@@ -26,8 +26,10 @@ jobs:
       run: |
         git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino_contrib --depth 1
         git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino -b releases/2022/2
+        git clone https://github.com/oneapi-src/oneTBB --depth 1
         cd openvino && echo "https://github.com/openvinotoolkit/openvino/commit/$(git rev-parse HEAD)" > ../versions.txt && cd ..
         cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
+        cd oneTBB && echo "https://github.com/oneapi-src/oneTBB/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
 
     - name: Upload versions.txt
       uses: actions/upload-artifact@v2
@@ -52,6 +54,27 @@ jobs:
          ./sdk/cmdline-tools/bin/sdkmanager --install "cmake;${{env.CMAKE_VERSION}}" --sdk_root=./sdk/
          ./sdk/cmdline-tools/bin/sdkmanager --install "ndk;${{env.NDK_VERSION}}" --sdk_root=./sdk/
 
+    - name: Build TBB (ARM64)
+      run: |
+        sed -i -E 's|sources/cxx-stl/llvm-libc\+\+/libs/\$\{ANDROID_ABI\}|toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android|' CMakeLists.txt
+         
+        ${{env.CMAKE_DIR}}/bin/cmake \
+         -DCMAKE_BUILD_TYPE=Release \
+         -DCMAKE_CXX_FLAGS="-Wno-error=attributes" \
+         -DTBB_TEST=OFF \
+         -DANDROID_ABI=arm64-v8a \
+         -DANDROID_PLATFORM=32 \
+         -DANDROID_STL=c++_shared \
+         -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
+         -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
+         -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF \
+         -GNinja \
+         -S oneTBB \
+         -B oneTBB_build_arm64
+
+        ${{env.CMAKE_DIR}}/bin/cmake --build oneTBB_build_arm64 -j$(nproc --all)
+        ${{env.CMAKE_DIR}}/bin/cmake --install oneTBB_build_arm64 --prefix oneTBB_install_arm64
+
     - name: Build OpenVINO (ARM64)
       run: |
         ${{env.CMAKE_DIR}}/bin/cmake \
@@ -66,7 +89,8 @@ jobs:
           -DENABLE_OPENCV=OFF \
           -DENABLE_TEMPLATE=OFF \
           -DENABLE_SAMPLES=OFF \
-          -DTHREADING=SEQ \
+          -DTHREADING=TBB \
+          -DTBB_DIR=$(realpath oneTBB_install_arm64/lib/cmake/TBB) \
           -DBUILD_nvidia_plugin=OFF \
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
           -GNinja \
@@ -76,6 +100,7 @@ jobs:
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
         
         cp ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so openvino_install_arm64/runtime/lib/aarch64
+        cp oneTBB_install_arm64/lib/*.so openvino_install_arm64/runtime/lib/aarch64
 
     - name: Strip libraries (ARM64)
       run: |
@@ -83,6 +108,7 @@ jobs:
 
     - name: Clean space (ARM64)
       run: |
+        rm -r oneTBB_install_arm64
         rm -r openvino_build_arm64
         rm -r openvino/bin
 
