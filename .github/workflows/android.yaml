@@ -49,11 +49,11 @@ jobs:
          wget -q https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
          unzip commandlinetools-linux-8512546_latest.zip -d sdk
          yes | ./sdk/cmdline-tools/bin/sdkmanager --licenses --sdk_root=./sdk/
-      working-directory: openvino_contrib/modules/java_api
+         ./sdk/cmdline-tools/bin/sdkmanager --install "cmake;3.22.1" --sdk_root=./sdk/
 
     - name: Build OpenVINO (ARM64)
       run: |
-        cmake \
+        ${GITHUB_WORKSPACE}/sdk/cmake/3.22.1/bin/cmake \
           -DANDROID_ABI=arm64-v8a \
           -DANDROID_PLATFORM=21 \
           -DANDROID_STL=c++_shared \
@@ -68,8 +68,8 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=$(realpath android-ndk/build/cmake/android.toolchain.cmake) \
           -S openvino -B openvino_build_arm64
 
-        cmake --build openvino_build_arm64 -j$(nproc --all)
-        cmake --install openvino_build_arm64 --prefix openvino_install_arm64
+        ${GITHUB_WORKSPACE}/sdk/cmake/3.22.1/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
+        ${GITHUB_WORKSPACE}/sdk/cmake/3.22.1/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
 
     - name: Strip libraries (ARM64)
       run: |
