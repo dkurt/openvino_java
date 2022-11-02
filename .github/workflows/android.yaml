@@ -128,7 +128,7 @@ jobs:
 
     - name: Strip libraries (x86_64)
       run: |
-        ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip openvino_install_arm64/runtime/lib/intel64/*.so
+        ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip openvino_install_x86/runtime/lib/intel64/*.so
 
     - name: Clean space (x86_64)
       run: |
