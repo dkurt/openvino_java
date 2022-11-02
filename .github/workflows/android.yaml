@@ -5,6 +5,8 @@ on: [workflow_dispatch, pull_request]
 env:
   CMAKE_VERSION: 3.22.1
   NDK_VERSION: 25.1.8937393
+  CMAKE_DIR: ${GITHUB_WORKSPACE}/sdk/cmake/3.22.1
+  NDK_DIR: ${GITHUB_WORKSPACE}/sdk/ndk/25.1.8937393
 
 jobs:
   build_android:
@@ -52,14 +54,14 @@ jobs:
 
     - name: Build OpenVINO (ARM64)
       run: |
-        ${GITHUB_WORKSPACE}/sdk/cmake/${{env.CMAKE_VERSION}}/bin/cmake \
+        ${{env.CMAKE_DIR}}/bin/cmake \
           -DANDROID_ABI=arm64-v8a \
-          -DANDROID_PLATFORM=21 \
+          -DANDROID_PLATFORM=32 \
           -DANDROID_STL=c++_shared \
-          -DCMAKE_TOOLCHAIN_FILE=${GITHUB_WORKSPACE}/sdk/ndk/${{env.NDK_VERSION}}/build/cmake/android.toolchain.cmake \
-          -DANDROID_NDK=${GITHUB_WORKSPACE}/sdk/ndk/${{env.NDK_VERSION}} \
-          -DCMAKE_ANDROID_NDK=${GITHUB_WORKSPACE}/sdk/ndk/${{env.NDK_VERSION}} \
-          -DCMAKE_MAKE_PROGRAM=${GITHUB_WORKSPACE}/sdk/cmake/${{env.CMAKE_VERSION}}/bin/ninja \
+          -DCMAKE_TOOLCHAIN_FILE=${{end.NDK_DIR}}/build/cmake/android.toolchain.cmake \
+          -DANDROID_NDK=${{end.NDK_DIR}} \
+          -DCMAKE_ANDROID_NDK=${{end.NDK_DIR}} \
+          -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DENABLE_INTEL_MYRIAD=OFF \
           -DENABLE_CLDNN=OFF \
           -DENABLE_OPENCV=OFF \
@@ -71,12 +73,12 @@ jobs:
           -GNinja \
           -S openvino -B openvino_build_arm64
 
-        ${GITHUB_WORKSPACE}/sdk/cmake/${{env.CMAKE_VERSION}}/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
-        ${GITHUB_WORKSPACE}/sdk/cmake/${{env.CMAKE_VERSION}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
+        ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
+        ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
 
     - name: Strip libraries (ARM64)
       run: |
-        android-ndk/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip openvino_install_arm64/runtime/lib/aarch64/*.so
+        ${{end.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/bin/strip openvino_install_arm64/runtime/lib/aarch64/*.so
 
     - name: Clean space (ARM64)
       run: |
@@ -86,7 +88,7 @@ jobs:
     - name: Build package (ARM64)
       run: |
         source ../../../openvino_install_arm64/setupvars.sh
-        export ANDROID_SDK_ROOT=$(realpath ./sdk)
+        export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
         mkdir -p src/main/
         cp ../../../AndroidManifest.xml src/main/
@@ -105,10 +107,14 @@ jobs:
 
     - name: Build OpenVINO (x86_64)
       run: |
-        cmake \
+        ${{env.CMAKE_DIR}}/bin/cmake \
           -DANDROID_ABI=x86_64 \
           -DANDROID_PLATFORM=21 \
           -DANDROID_STL=c++_shared \
+          -DCMAKE_TOOLCHAIN_FILE=${{end.NDK_DIR}}/build/cmake/android.toolchain.cmake \
+          -DANDROID_NDK=${{end.NDK_DIR}} \
+          -DCMAKE_ANDROID_NDK=${{end.NDK_DIR}} \
+          -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DENABLE_CLDNN=OFF \
           -DENABLE_OPENCV=OFF \
           -DENABLE_TEMPLATE=OFF \
@@ -116,11 +122,11 @@ jobs:
           -DTHREADING=SEQ \
           -DBUILD_nvidia_plugin=OFF \
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
-          -DCMAKE_TOOLCHAIN_FILE=$(realpath android-ndk/build/cmake/android.toolchain.cmake) \
+          -GNinja \
           -S openvino -B openvino_build_x86
 
-        cmake --build openvino_build_x86 -j$(nproc --all)
-        cmake --install openvino_build_x86 --prefix openvino_install_x86
+        ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_x86 -j$(nproc --all)
+        ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_x86 --prefix openvino_install_x86
 
         cp android-ndk/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_shared.so openvino_install_x86/runtime/lib/intel64
 
