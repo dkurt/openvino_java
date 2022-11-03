@@ -74,6 +74,8 @@ jobs:
 
         ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
+        
+        cp ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so openvino_install_arm64/runtime/lib/aarch64
 
     - name: Strip libraries (ARM64)
       run: |
@@ -125,6 +127,8 @@ jobs:
 
         ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_x86 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_x86 --prefix openvino_install_x86
+
+        cp ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so openvino_install_x86/runtime/lib/intel64
 
     - name: Strip libraries (x86_64)
       run: |
