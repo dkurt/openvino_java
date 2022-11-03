@@ -149,7 +149,7 @@ jobs:
           -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF \
           -GNinja \
           -S oneTBB \
-          -B oneTBB_build_arm64
+          -B oneTBB_build_x86
 
         ${{env.CMAKE_DIR}}/bin/cmake --build oneTBB_build_x86 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install oneTBB_build_x86 --prefix oneTBB_install_x86
