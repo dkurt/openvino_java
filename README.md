@@ -1,5 +1,7 @@
 # Java bindings for Intel OpenVINO
 
+[![GitHub all releases](https://img.shields.io/github/downloads/dkurt/openvino_java/total?color=blue)](https://github.com/dkurt/openvino_java/releases)
+
 **NOTE**: This is an unofficial build farm for OpenVINO in Java for Linux, Windows and Mac (x86) and Android (x86 and ARM64)
 
 ## How to use
