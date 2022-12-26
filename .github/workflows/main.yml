@@ -1,6 +1,6 @@
 name: Build for Linux, Windows, Mac
 
-on: [workflow_dispatch, pull_request]
+on: [workflow_dispatch]
 
 jobs:
   run_linux:
@@ -40,6 +40,7 @@ jobs:
         wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2022.3/linux/l_openvino_toolkit_rhel8_2022.3.0.9052.9752fafe8eb_x86_64.tgz -O openvino.tgz
         sudo mkdir -p /opt/intel/openvino_2022
         sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
+        sudo -E /opt/intel/openvino_2022/install_dependencies/install_openvino_dependencies.sh
 
     - name: Build bindings
       run: |
@@ -54,7 +55,6 @@ jobs:
     - name: Build package
       run: |
         source /opt/intel/openvino_2022/setupvars.sh
-        sed -i -E 's|2022.1|2022.3|' build.gradle
         ../../../gradle-6.2.2/bin/gradle clean build --info
         ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
@@ -75,7 +75,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2022/3 --depth 1
         git clone https://github.com/openvinotoolkit/testdata
 
     - name: Install Java
@@ -98,12 +98,6 @@ jobs:
         cmake --build . --config Release -j 2
         move Release\\*.dll "C:\Program Files (x86)\Intel\openvino_2022\runtime\bin\intel64\Release"
       shell: cmd
-
-    - name: Fix version
-      run: |
-        (Get-Content build.gradle) | ForEach-Object { $_ -replace "2022.1", "2022.3" } | Set-Content build.gradle
-      shell: pwsh
-      working-directory: openvino_contrib\\modules\\java_api
 
     - name: Build package
       run: |
@@ -129,7 +123,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/dkurt/openvino_contrib -b fix_java_cmake
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2022/3 --depth 1
         git clone https://github.com/openvinotoolkit/testdata
 
     - name: Install Java
@@ -150,6 +144,8 @@ jobs:
 
     - name: Build bindings
       run: |
+        brew install coreutils
+
         mkdir build_api && cd build_api
         source /opt/intel/openvino_2022/setupvars.sh
         cmake ../openvino_contrib/modules/java_api \
@@ -161,7 +157,6 @@ jobs:
     - name: Build package
       run: |
         source /opt/intel/openvino_2022/setupvars.sh
-        sed -i -E 's|2022.1|2022.3|' build.gradle
         gradle clean build --info
         gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
