@@ -63,8 +63,7 @@ jobs:
           -DCMAKE_CXX_FLAGS="-Wno-error=attributes" \
           -DTBB_TEST=OFF \
           -DANDROID_ABI=arm64-v8a \
-          -DANDROID_PLATFORM=32 \
-          -DANDROID_STL=c++_shared \
+          -DANDROID_PLATFORM=26 \
           -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF \
@@ -80,8 +79,7 @@ jobs:
         ${{env.CMAKE_DIR}}/bin/cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DANDROID_ABI=arm64-v8a \
-          -DANDROID_PLATFORM=32 \
-          -DANDROID_STL=c++_shared \
+          -DANDROID_PLATFORM=26 \
           -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF \
@@ -100,7 +98,6 @@ jobs:
         ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
         
-        cp ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so openvino_install_arm64/runtime/lib/aarch64
         cp oneTBB_install_arm64/lib/*.so openvino_install_arm64/runtime/lib/aarch64
 
     - name: Strip libraries (ARM64)
@@ -143,8 +140,7 @@ jobs:
           -DCMAKE_CXX_FLAGS="-Wno-error=attributes" \
           -DTBB_TEST=OFF \
           -DANDROID_ABI=x86_64 \
-          -DANDROID_PLATFORM=32 \
-          -DANDROID_STL=c++_shared \
+          -DANDROID_PLATFORM=26 \
           -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF \
@@ -160,8 +156,7 @@ jobs:
         ${{env.CMAKE_DIR}}/bin/cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DANDROID_ABI=x86_64 \
-          -DANDROID_PLATFORM=32 \
-          -DANDROID_STL=c++_shared \
+          -DANDROID_PLATFORM=26 \
           -DCMAKE_TOOLCHAIN_FILE=${{env.NDK_DIR}}/build/cmake/android.toolchain.cmake \
           -DCMAKE_MAKE_PROGRAM=${{env.CMAKE_DIR}}/bin/ninja \
           -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF \
@@ -179,7 +174,6 @@ jobs:
         ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_x86 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_x86 --prefix openvino_install_x86
 
-        cp ${{env.NDK_DIR}}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so openvino_install_x86/runtime/lib/intel64
         cp oneTBB_install_x86/lib/*.so openvino_install_x86/runtime/lib/intel64
 
     - name: Strip libraries (x86_64)
