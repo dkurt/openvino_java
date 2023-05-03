@@ -91,6 +91,7 @@ jobs:
           -DTHREADING=TBB \
           -DTBB_DIR=$(realpath oneTBB_install_arm64/lib/cmake/TBB) \
           -DBUILD_nvidia_plugin=OFF \
+          -DBUILD_custom_operations=OFF \
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
           -GNinja \
           -S openvino -B openvino_build_arm64
@@ -167,6 +168,7 @@ jobs:
           -DTHREADING=TBB \
           -DTBB_DIR=$(realpath oneTBB_install_x86/lib/cmake/TBB) \
           -DBUILD_nvidia_plugin=OFF \
+          -DBUILD_custom_operations=OFF \
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
           -GNinja \
           -S openvino -B openvino_build_x86
