@@ -25,7 +25,7 @@ jobs:
     - name: Clone
       run: |
         git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
-        git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino -b releases/2023/0 --depth 1
+        git clone --recurse-submodules -j$(nproc --all) https://github.com/dkurt/openvino -b fix_cmake_make_program --depth 1
         git clone https://github.com/oneapi-src/oneTBB --depth 1
         cd openvino && echo "https://github.com/openvinotoolkit/openvino/commit/$(git rev-parse HEAD)" > ../versions.txt && cd ..
         cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
