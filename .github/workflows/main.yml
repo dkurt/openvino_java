@@ -114,7 +114,7 @@ jobs:
         path: "openvino_contrib\\modules\\java_api\\build\\libs\\*.jar"
 
   run_mac:
-    runs-on: macos-latest
+    runs-on: macos-11
     name: Build on Mac
 
     steps:
