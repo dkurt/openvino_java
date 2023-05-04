@@ -1,6 +1,6 @@
 name: Build for Android
 
-on: [pull_request]
+on: [workflow_dispatch]
 
 env:
   CMAKE_VERSION: 3.22.1
@@ -98,7 +98,7 @@ jobs:
 
         ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
-        
+
         cp oneTBB_install_arm64/lib/*.so openvino_install_arm64/runtime/lib/aarch64
 
     - name: Strip libraries (ARM64)
