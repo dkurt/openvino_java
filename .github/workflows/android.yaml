@@ -10,7 +10,7 @@ env:
 
 jobs:
   build_android:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Build for Android
 
     steps:
