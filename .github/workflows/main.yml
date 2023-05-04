@@ -1,10 +1,10 @@
 name: Build for Linux, Windows, Mac
 
-on: [workflow_dispatch]
+on: [pull_request]
 
 jobs:
   run_linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     name: Build on Linux
 
     steps:
@@ -18,10 +18,10 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2022/3 --depth 1
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
         cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
 
-        git clone https://github.com/openvinotoolkit/testdata -b releases/2022/3 --depth 1
+        git clone https://github.com/openvinotoolkit/testdata -b releases/2023/0 --depth 1
         cd testdata && git lfs pull
 
     - name: Upload versions.txt
@@ -37,24 +37,24 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2022.3/linux/l_openvino_toolkit_rhel8_2022.3.0.9052.9752fafe8eb_x86_64.tgz -O openvino.tgz
-        sudo mkdir -p /opt/intel/openvino_2022
-        sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
-        sudo -E /opt/intel/openvino_2022/install_dependencies/install_openvino_dependencies.sh
+        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/master/2023.0.0.dev20230407/l_openvino_toolkit_rhel8_2023.0.0.dev20230407_x86_64.tgz -O openvino.tgz
+        sudo mkdir -p /opt/intel/openvino
+        sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
+        sudo -E /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh
 
     - name: Build bindings
       run: |
         mkdir build_api && cd build_api
-        source /opt/intel/openvino_2022/setupvars.sh
+        source /opt/intel/openvino/setupvars.sh
         cmake ../openvino_contrib/modules/java_api \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_FLAGS="-std=c++11"
         make -j$(nproc --all)
-        sudo cp *.so /opt/intel/openvino_2022/runtime/lib/intel64
+        sudo cp *.so /opt/intel/openvino/runtime/lib/intel64
 
     - name: Build package
       run: |
-        source /opt/intel/openvino_2022/setupvars.sh
+        source /opt/intel/openvino/setupvars.sh
         ../../../gradle-6.2.2/bin/gradle clean build --info
         ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
@@ -75,7 +75,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2022/3 --depth 1
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
         git clone https://github.com/openvinotoolkit/testdata
 
     - name: Install Java
@@ -85,23 +85,23 @@ jobs:
 
     - name: Download OpenVINO
       run: |
-        Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/2022.3/windows/w_openvino_toolkit_windows_2022.3.0.9052.9752fafe8eb_x86_64.zip -OutFile openvino.zip
+        Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/master/2023.0.0.dev20230407/w_openvino_toolkit_windows_2023.0.0.dev20230407_x86_64.zip -OutFile openvino.zip
         Expand-Archive -Path openvino.zip -DestinationPath "C:\Program Files (x86)\Intel"
-        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2022.3.0.9052.9752fafe8eb_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino_2022"
+        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2023.0.0.dev20230407_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
       shell: pwsh
 
     - name: Build bindings
       run: |
         mkdir build_api && cd build_api
-        call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
+        call "C:\Program Files (x86)\Intel\openvino\setupvars.bat"
         cmake ..\openvino_contrib\modules\java_api -DCMAKE_BUILD_TYPE=Release
         cmake --build . --config Release -j 2
-        move Release\\*.dll "C:\Program Files (x86)\Intel\openvino_2022\runtime\bin\intel64\Release"
+        move Release\\*.dll "C:\Program Files (x86)\Intel\openvino\runtime\bin\intel64\Release"
       shell: cmd
 
     - name: Build package
       run: |
-        call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
+        call "C:\Program Files (x86)\Intel\openvino\setupvars.bat"
         gradle clean build --info
         gradle test -Prun_tests -DMODELS_PATH=..\\..\\..\\testdata -Ddevice=CPU --info
       shell: cmd
@@ -123,7 +123,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2022/3 --depth 1
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
         git clone https://github.com/openvinotoolkit/testdata
 
     - name: Install Java
@@ -138,25 +138,25 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2022.3/macos/m_openvino_toolkit_macos_10_15_2022.3.0.9052.9752fafe8eb_x86_64.tgz -O openvino.tgz
-        sudo mkdir -p /opt/intel/openvino_2022
-        sudo tar -xf openvino.tgz -C /opt/intel/openvino_2022 --strip-components=1
+        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/master/2023.0.0.dev20230407/m_openvino_toolkit_macos_10_15_2023.0.0.dev20230407_x86_64.tgz -O openvino.tgz
+        sudo mkdir -p /opt/intel/openvino
+        sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
 
     - name: Build bindings
       run: |
         brew install coreutils
 
         mkdir build_api && cd build_api
-        source /opt/intel/openvino_2022/setupvars.sh
+        source /opt/intel/openvino/setupvars.sh
         cmake ../openvino_contrib/modules/java_api \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_FLAGS="-std=c++11"
         make -j$(nproc --all)
-        sudo cp *.dylib /opt/intel/openvino_2022/runtime/lib/intel64/Release
+        sudo cp *.dylib /opt/intel/openvino/runtime/lib/intel64/Release
 
     - name: Build package
       run: |
-        source /opt/intel/openvino_2022/setupvars.sh
+        source /opt/intel/openvino/setupvars.sh
         gradle clean build --info
         gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
