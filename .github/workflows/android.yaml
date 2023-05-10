@@ -114,6 +114,7 @@ jobs:
     - name: Build package (ARM64)
       run: |
         source ../../../openvino_install_arm64/setupvars.sh
+        unset ANDROID_HOME
         export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
         mkdir -p src/main/
@@ -190,6 +191,7 @@ jobs:
     - name: Build package (x86_64)
       run: |
         source ../../../openvino_install_x86/setupvars.sh
+        unset ANDROID_HOME
         export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
         mkdir -p src/main/
