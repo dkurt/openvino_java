@@ -10,7 +10,7 @@ env:
 
 jobs:
   build_android:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Build for Android
 
     steps:
@@ -19,13 +19,13 @@ jobs:
 
     - name: Download Gradle
       run: |
-        wget -q https://downloads.gradle-dn.com/distributions/gradle-6.5-bin.zip
-        unzip gradle-6.5-bin.zip
+        wget -q https://downloads.gradle-dn.com/distributions/gradle-7.4-bin.zip
+        unzip gradle-7.4-bin.zip
 
     - name: Clone
       run: |
-        git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino_contrib -b releases/2022/3 --depth 1
-        git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino -b releases/2022/3 --depth 1
+        git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
+        git clone --recurse-submodules -j$(nproc --all) https://github.com/openvinotoolkit/openvino -b releases/2023/0 --depth 1
         git clone https://github.com/oneapi-src/oneTBB --depth 1
         cd openvino && echo "https://github.com/openvinotoolkit/openvino/commit/$(git rev-parse HEAD)" > ../versions.txt && cd ..
         cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
@@ -91,13 +91,14 @@ jobs:
           -DTHREADING=TBB \
           -DTBB_DIR=$(realpath oneTBB_install_arm64/lib/cmake/TBB) \
           -DBUILD_nvidia_plugin=OFF \
+          -DBUILD_custom_operations=OFF \
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
           -GNinja \
           -S openvino -B openvino_build_arm64
 
         ${{env.CMAKE_DIR}}/bin/cmake --build openvino_build_arm64 -j$(nproc --all)
         ${{env.CMAKE_DIR}}/bin/cmake --install openvino_build_arm64 --prefix openvino_install_arm64
-        
+
         cp oneTBB_install_arm64/lib/*.so openvino_install_arm64/runtime/lib/aarch64
 
     - name: Strip libraries (ARM64)
@@ -113,6 +114,7 @@ jobs:
     - name: Build package (ARM64)
       run: |
         source ../../../openvino_install_arm64/setupvars.sh
+        unset ANDROID_HOME
         export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
         mkdir -p src/main/
@@ -121,7 +123,7 @@ jobs:
 
         mv $INTEL_OPENVINO_DIR/runtime/lib/aarch64 $INTEL_OPENVINO_DIR/runtime/lib/arm64-v8a
 
-        ../../../gradle-6.5/bin/gradle clean build -x lint --info
+        ../../../gradle-7.4/bin/gradle clean build -x lint --info
       working-directory: openvino_contrib/modules/java_api
 
     - name: Upload (ARM64)
@@ -167,6 +169,7 @@ jobs:
           -DTHREADING=TBB \
           -DTBB_DIR=$(realpath oneTBB_install_x86/lib/cmake/TBB) \
           -DBUILD_nvidia_plugin=OFF \
+          -DBUILD_custom_operations=OFF \
           -DIE_EXTRA_MODULES=$(realpath openvino_contrib/modules) \
           -GNinja \
           -S openvino -B openvino_build_x86
@@ -188,6 +191,7 @@ jobs:
     - name: Build package (x86_64)
       run: |
         source ../../../openvino_install_x86/setupvars.sh
+        unset ANDROID_HOME
         export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
         mkdir -p src/main/
@@ -196,7 +200,7 @@ jobs:
 
         mv $INTEL_OPENVINO_DIR/runtime/lib/intel64 $INTEL_OPENVINO_DIR/runtime/lib/x86_64
 
-        ../../../gradle-6.5/bin/gradle clean build -x lint --info
+        ../../../gradle-7.4/bin/gradle clean build -x lint --info
       working-directory: openvino_contrib/modules/java_api
 
     - name: Upload (x86_64)
