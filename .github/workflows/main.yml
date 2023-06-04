@@ -87,7 +87,7 @@ jobs:
       run: |
         Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/windows/w_openvino_toolkit_windows_2023.0.0.10926.b4452d56304_x86_64.zip -OutFile openvino.zip
         Expand-Archive -Path openvino.zip -DestinationPath "C:\Program Files (x86)\Intel"
-        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2023.0.0.dev20230427_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
+        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2023.0.0.10926.b4452d56304_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
       shell: pwsh
 
     - name: Build bindings
