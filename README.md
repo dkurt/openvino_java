@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-  implementation "dkurt:openvino_java:2022.3:linux-x86_64@jar"  // Choose "macosx-x86_64" for Mac or "windows-x86_64" for Windows
+  implementation "dkurt:openvino_java:2023.0:linux-x86_64@jar"  // Choose "macosx-x86_64" for Mac or "windows-x86_64" for Windows
 }
 ```
 
