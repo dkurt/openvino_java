@@ -40,7 +40,7 @@ jobs:
         wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/linux/l_openvino_toolkit_rhel8_2023.0.0.10926.b4452d56304_x86_64.tgz -O openvino.tgz
         sudo mkdir -p /opt/intel/openvino
         sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
-        sudo apt-get install -y libtbb2
+        sudo apt-get install -y libtbb2 libpugixml1v5
 
     - name: Build bindings
       run: |
