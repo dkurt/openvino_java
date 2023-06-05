@@ -37,10 +37,10 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/master/2023.0.0.dev20230427/l_openvino_toolkit_rhel8_2023.0.0.dev20230427_x86_64.tgz -O openvino.tgz
+        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/linux/l_openvino_toolkit_rhel8_2023.0.0.10926.b4452d56304_x86_64.tgz -O openvino.tgz
         sudo mkdir -p /opt/intel/openvino
         sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
-        sudo -E /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh
+        sudo apt-get install -y libtbb2 libpugixml1v5
 
     - name: Build bindings
       run: |
@@ -85,9 +85,9 @@ jobs:
 
     - name: Download OpenVINO
       run: |
-        Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/master/2023.0.0.dev20230427/w_openvino_toolkit_windows_2023.0.0.dev20230427_x86_64.zip -OutFile openvino.zip
+        Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/windows/w_openvino_toolkit_windows_2023.0.0.10926.b4452d56304_x86_64.zip -OutFile openvino.zip
         Expand-Archive -Path openvino.zip -DestinationPath "C:\Program Files (x86)\Intel"
-        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2023.0.0.dev20230427_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
+        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2023.0.0.10926.b4452d56304_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
       shell: pwsh
 
     - name: Build bindings
@@ -138,7 +138,7 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/master/2023.0.0.dev20230427/m_openvino_toolkit_macos_10_15_2023.0.0.dev20230427_x86_64.tgz -O openvino.tgz
+        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/macos/m_openvino_toolkit_macos_10_15_2023.0.0.10926.b4452d56304_x86_64.tgz -O openvino.tgz
         sudo mkdir -p /opt/intel/openvino
         sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
 
