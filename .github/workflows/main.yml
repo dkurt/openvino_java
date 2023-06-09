@@ -1,6 +1,6 @@
 name: Build for Linux, Windows, Mac
 
-on: [workflow_dispatch]
+on: [workflow_dispatch, pull_request]
 
 jobs:
   run_linux:
@@ -56,6 +56,10 @@ jobs:
       run: |
         source /opt/intel/openvino/setupvars.sh
         ../../../gradle-6.2.2/bin/gradle clean build --info
+      working-directory: openvino_contrib/modules/java_api
+
+    - name: Test package
+      run: |
         ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
 
@@ -103,6 +107,11 @@ jobs:
       run: |
         call "C:\Program Files (x86)\Intel\openvino\setupvars.bat"
         gradle clean build --info
+      shell: cmd
+      working-directory: openvino_contrib\\modules\\java_api
+
+    - name: Test package
+      run: |
         gradle test -Prun_tests -DMODELS_PATH=..\\..\\..\\testdata -Ddevice=CPU --info
       shell: cmd
       working-directory: openvino_contrib\\modules\\java_api
@@ -158,6 +167,10 @@ jobs:
       run: |
         source /opt/intel/openvino/setupvars.sh
         gradle clean build --info
+      working-directory: openvino_contrib/modules/java_api
+
+    - name: Test package
+      run: |
         gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
 
