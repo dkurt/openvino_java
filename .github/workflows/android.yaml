@@ -19,7 +19,7 @@ jobs:
 
     - name: Download Gradle
       run: |
-        wget -q https://downloads.gradle-dn.com/distributions/gradle-7.4-bin.zip
+        wget -q https://services.gradle.org/distributions/gradle-7.4-bin.zip
         unzip gradle-7.4-bin.zip
 
     - name: Clone
