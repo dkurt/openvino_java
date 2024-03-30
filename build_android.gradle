@@ -39,7 +39,7 @@ android {
             }
             jniLibs.srcDirs = [nativeLibs]
             resources {
-                srcDirs = [nativeLibs + "/arm64-v8a", nativeLibs + "/aarch64", nativeLibs + "/x86_64"]  // For plugins.xml
+                srcDirs = [nativeLibs + "/arm64-v8a", nativeLibs + "/x86_64"]  // For plugins.xml
             }
         }
     }
