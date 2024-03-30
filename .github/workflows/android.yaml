@@ -168,6 +168,7 @@ jobs:
           -DENABLE_TEMPLATE=OFF \
           -DENABLE_SAMPLES=OFF \
           -DENABLE_PLUGINS_XML=ON \
+          -DENABLE_JS=OFF \
           -DTHREADING=TBB \
           -DTBB_DIR=$(realpath oneTBB_install_x86/lib/cmake/TBB) \
           -DBUILD_nvidia_plugin=OFF \
