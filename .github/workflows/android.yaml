@@ -118,7 +118,8 @@ jobs:
         unset ANDROID_HOME
         export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
-        mkdir -p src/main/
+        mkdir -p src/main/java
+        [ -f org/intel/openvino/Core.java ] && cp -R org src/main/java/
         cp ../../../AndroidManifest.xml src/main/
         cp ../../../build_android.gradle build.gradle
 
@@ -197,7 +198,8 @@ jobs:
         unset ANDROID_HOME
         export ANDROID_SDK_ROOT=${GITHUB_WORKSPACE}/sdk
 
-        mkdir -p src/main/
+        mkdir -p src/main/java
+        [ -f org/intel/openvino/Core.java ] && cp -R org src/main/java/
         cp ../../../AndroidManifest.xml src/main/
         cp ../../../build_android.gradle build.gradle
 
