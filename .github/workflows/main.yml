@@ -37,7 +37,7 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.0/linux/l_openvino_toolkit_rhel8_2024.0.0.14509.34caeefd078_x86_64.tgz
+        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.0/linux/l_openvino_toolkit_rhel8_2024.0.0.14509.34caeefd078_x86_64.tgz -O openvino.tgz
         sudo mkdir -p /opt/intel/openvino
         sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
         sudo apt-get install -y libtbb2 libpugixml1v5
