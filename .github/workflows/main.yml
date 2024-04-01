@@ -55,8 +55,8 @@ jobs:
     - name: Build package
       run: |
         source /opt/intel/openvino/setupvars.sh
-        ../../../gradle-6.2.2/bin/gradle clean build --info
-        ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+        ../../../gradle-7.4/bin/gradle clean build --info
+        ../../../gradle-7.4/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
 
     - name: Upload
