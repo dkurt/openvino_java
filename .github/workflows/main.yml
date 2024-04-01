@@ -1,6 +1,6 @@
 name: Build for Linux, Windows, Mac
 
-on: [workflow_dispatch]
+on: [workflow_dispatch, pull_request]
 
 jobs:
   run_linux:
@@ -13,15 +13,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-        wget -q https://downloads.gradle-dn.com/distributions/gradle-6.2.2-bin.zip
-        unzip gradle-6.2.2-bin.zip
+        wget -q https://services.gradle.org/distributions/gradle-7.4-bin.zip
+        unzip gradle-7.4-bin.zip
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2024/0 --depth 1
         cd openvino_contrib && echo "https://github.com/openvinotoolkit/openvino_contrib/commit/$(git rev-parse HEAD)" >> ../versions.txt && cd ..
 
-        git clone https://github.com/openvinotoolkit/testdata -b releases/2023/0 --depth 1
+        git clone https://github.com/openvinotoolkit/testdata -b releases/2024/0 --depth 1
         cd testdata && git lfs pull
 
     - name: Upload versions.txt
@@ -37,7 +37,7 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/linux/l_openvino_toolkit_rhel8_2023.0.0.10926.b4452d56304_x86_64.tgz -O openvino.tgz
+        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.0/linux/l_openvino_toolkit_rhel8_2024.0.0.14509.34caeefd078_x86_64.tgz -O openvino.tgz
         sudo mkdir -p /opt/intel/openvino
         sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
         sudo apt-get install -y libtbb2 libpugixml1v5
@@ -55,8 +55,8 @@ jobs:
     - name: Build package
       run: |
         source /opt/intel/openvino/setupvars.sh
-        ../../../gradle-6.2.2/bin/gradle clean build --info
-        ../../../gradle-6.2.2/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
+        ../../../gradle-7.4/bin/gradle clean build --info
+        ../../../gradle-7.4/bin/gradle test -Prun_tests -DMODELS_PATH=../../../testdata -Ddevice=CPU --info
       working-directory: openvino_contrib/modules/java_api
 
     - name: Upload
@@ -123,7 +123,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2024/0 --depth 1
         git clone https://github.com/openvinotoolkit/testdata
 
     - name: Install Java
@@ -138,7 +138,7 @@ jobs:
 
     - name: Install OpenVINO
       run: |
-        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/macos/m_openvino_toolkit_macos_10_15_2023.0.0.10926.b4452d56304_x86_64.tgz -O openvino.tgz
+        wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.0/macos/m_openvino_toolkit_macos_10_15_2024.0.0.14509.34caeefd078_x86_64.tgz -O openvino.tgz
         sudo mkdir -p /opt/intel/openvino
         sudo tar -xf openvino.tgz -C /opt/intel/openvino --strip-components=1
 
