@@ -75,7 +75,7 @@ jobs:
 
     - name: Clone
       run: |
-        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2024/0 --depth 1
+        git clone https://github.com/openvinotoolkit/openvino_contrib -b releases/2023/0 --depth 1
         git clone https://github.com/openvinotoolkit/testdata
 
     - name: Install Java
@@ -85,10 +85,9 @@ jobs:
 
     - name: Download OpenVINO
       run: |
-        Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.0/windows/w_openvino_toolkit_windows_2024.0.0.14509.34caeefd078_x86_64.zip -OutFile openvino.zip
+        Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.0/windows/w_openvino_toolkit_windows_2023.0.0.10926.b4452d56304_x86_64.zip -OutFile openvino.zip
         Expand-Archive -Path openvino.zip -DestinationPath "C:\Program Files (x86)\Intel"
-        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2024.0.0.14509.34caeefd078_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
-        (Get-Content "C:\Program Files (x86)\Intel\openvino\runtime\cmake\OpenVINOConfig.cmake").Replace('set(flags "-Wno-error=deprecated-declarations")', ' ') | Set-Content "C:\Program Files (x86)\Intel\openvino\runtime\cmake\OpenVINOConfig.cmake"
+        Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2023.0.0.10926.b4452d56304_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
       shell: pwsh
 
     - name: Build bindings
