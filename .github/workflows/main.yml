@@ -88,7 +88,7 @@ jobs:
         Invoke-WebRequest https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.0/windows/w_openvino_toolkit_windows_2024.0.0.14509.34caeefd078_x86_64.zip -OutFile openvino.zip
         Expand-Archive -Path openvino.zip -DestinationPath "C:\Program Files (x86)\Intel"
         Move-Item -Path "C:\Program Files (x86)\Intel\w_openvino_toolkit_windows_2024.0.0.14509.34caeefd078_x86_64" -Destination "C:\Program Files (x86)\Intel\openvino"
-        (Get-Content "C:\Program Files (x86)\Intel\openvino\runtime\cmake\OpenVINOConfig.cmake").Replace('-Wno-error=deprecated-declarations', '') | Set-Content "C:\Program Files (x86)\Intel\openvino\runtime\cmake\OpenVINOConfig.cmake"
+        (Get-Content "C:\Program Files (x86)\Intel\openvino\runtime\cmake\OpenVINOConfig.cmake").Replace('-Wno-error=deprecated-declarations', '-Wno-dev') | Set-Content "C:\Program Files (x86)\Intel\openvino\runtime\cmake\OpenVINOConfig.cmake"
       shell: pwsh
 
     - name: Build bindings
